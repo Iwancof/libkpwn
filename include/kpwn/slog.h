@@ -5,6 +5,12 @@
 
 #include <kpwn/logger.h>
 
+// d.*: 'd'efault system call wrapper. output logs and check
+// result.
+
+// lg.* `log` system call wrapper. output specified log.
+// without result.
+
 void* lgmmap(logf_t log, void* addr, size_t len, int prot,
              int flags, int fildes, off_t off);
 void* dmmap(void* addr, size_t len, int prot, int flags,

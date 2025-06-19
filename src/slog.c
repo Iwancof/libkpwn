@@ -2,6 +2,7 @@
 
 #include <kpwn/logger.h>
 #include <kpwn/slog.h>
+#include <kpwn/utils.h>
 #include <sys/mman.h>
 
 void *lgmmap(logf_t log, void *addr, size_t len, int prot,
@@ -15,8 +16,8 @@ void *lgmmap(logf_t log, void *addr, size_t len, int prot,
 
 void *dmmap(void *addr, size_t len, int prot, int flags,
             int fildes, off_t off) {
-  return lgmmap(log_info, addr, len, prot, flags, fildes,
-                off);
+  return SYSCHK(lgmmap(log_info, addr, len, prot, flags,
+                       fildes, off));
 }
 
 int lgmunmap(logf_t log, void *addr, size_t len) {
@@ -26,7 +27,7 @@ int lgmunmap(logf_t log, void *addr, size_t len) {
 }
 
 int dunmap(void *addr, size_t len) {
-  return lgmunmap(log_info, addr, len);
+  return SYSCHK(lgmunmap(log_info, addr, len));
 }
 
 void *lgmremap(logf_t log, void *addr, size_t old,
@@ -39,5 +40,5 @@ void *lgmremap(logf_t log, void *addr, size_t old,
 
 void *dremap(void *addr, size_t old, size_t new,
              int flags) {
-  return lgmremap(log_info, addr, old, new, flags);
+  return SYSCHK(lgmremap(log_info, addr, old, new, flags));
 }
