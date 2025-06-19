@@ -1,5 +1,5 @@
-#ifndef _KPWN_ARCH_
-#define _KPWN_ARCH_
+#ifndef _KPWN_x86_64_SIDE_CHANNEL_
+#define _KPWN_x86_64_SIDE_CHANNEL_
 
 #include <stddef.h>
 #include <stdint.h>

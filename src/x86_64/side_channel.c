@@ -1,16 +1,8 @@
-#include <kpwn/arch.h>
 #include <kpwn/logger.h>
 #include <kpwn/utils.h>
+#include <kpwn/x86_64/side_channel.h>
 #include <stdint.h>
 #include <string.h>
-
-/*
-#define START (0xffffffff81000000ull)
-#define END (0xffffffffc0000000ull)
-#define STEP 0x0000000000080000ull
-#define NUM_TRIALS 7
-#define WINDOW_SIZE 11
-*/
 
 #define MAX_TRIALS 16
 

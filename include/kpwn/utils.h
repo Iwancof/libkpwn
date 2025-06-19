@@ -106,4 +106,16 @@ struct count_sort_data {
 struct count_sort_data count_sort(const uint64_t* data,
                                   size_t len);
 
+uint64_t pc64(char* bytes);
+void up64(uint64_t value, char* dst);
+
+uint32_t pc32(char* bytes);
+void up32(uint32_t value, char* dst);
+
+uint16_t pc16(char* bytes);
+void up16(uint16_t value, char* dst);
+
+uint8_t pc8(char* bytes);
+void up8(uint8_t value, char* dst);
+
 #endif

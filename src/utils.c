@@ -90,3 +90,63 @@ struct count_sort_data count_sort(const uint64_t* data,
 
   return count_data[0];
 }
+
+uint64_t pc64(char* bytes) {
+  uint64_t ret;
+  ASSERT_MSG(bytes != NULL, "bytes is NULL");
+
+  memcpy(&ret, bytes, sizeof(uint64_t));
+
+  return ret;
+}
+
+void up64(uint64_t value, char* dst) {
+  ASSERT_MSG(dst != NULL, "dst is NULL");
+
+  memcpy(dst, &value, sizeof(uint64_t));
+}
+
+uint32_t pc32(char* bytes) {
+  uint32_t ret;
+  ASSERT_MSG(bytes != NULL, "bytes is NULL");
+
+  memcpy(&ret, bytes, sizeof(uint32_t));
+
+  return ret;
+}
+
+void up32(uint32_t value, char* dst) {
+  ASSERT_MSG(dst != NULL, "dst is NULL");
+
+  memcpy(dst, &value, sizeof(uint32_t));
+}
+
+uint16_t pc16(char* bytes) {
+  uint16_t ret;
+  ASSERT_MSG(bytes != NULL, "bytes is NULL");
+
+  memcpy(&ret, bytes, sizeof(uint16_t));
+
+  return ret;
+}
+
+void up16(uint16_t value, char* dst) {
+  ASSERT_MSG(dst != NULL, "dst is NULL");
+
+  memcpy(dst, &value, sizeof(uint16_t));
+}
+
+uint8_t pc8(char* bytes) {
+  uint8_t ret;
+  ASSERT_MSG(bytes != NULL, "bytes is NULL");
+
+  memcpy(&ret, bytes, sizeof(uint8_t));
+
+  return ret;
+}
+
+void up8(uint8_t value, char* dst) {
+  ASSERT_MSG(dst != NULL, "dst is NULL");
+
+  memcpy(dst, &value, sizeof(uint8_t));
+}

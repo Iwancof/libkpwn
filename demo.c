@@ -1,14 +1,6 @@
 #define _GNU_SOURCE
 
-#include <kpwn/arch.h>
-#include <kpwn/flow.h>
-#include <kpwn/hexdump.h>
-#include <kpwn/interactive.h>
-#include <kpwn/kernel.h>
-#include <kpwn/logger.h>
-#include <kpwn/memory.h>
-#include <kpwn/slog.h>
-#include <kpwn/utils.h>
+#include <kpwn/prelude.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -19,8 +11,8 @@ size_t call_me(int x, int y) {
   return 0xdead;
 }
 
-int main() {
-  noaslr();
+int main(int argc, char* argv[]) {
+  noaslr(argc, argv);
 
   log_level = LOG_INFO;
   hexdump_width = 16;
@@ -46,7 +38,15 @@ int main() {
   vmmap(log_info);
 
   size_t x = kfunc_abs(call_me, 2, 1, 2);
-  printf("ret = 0x%llx\n", x);
+  printf("ret = 0x%lx\n", x);
+
+  char* payload = calloc(1, 0x20);
+  up64(0xdeadbeefcafebabe, &payload[0]);
+  up64(0x1122334444332211, &payload[8]);
+  up32(0xffffffff, &payload[16]);
+  up32(0xeeeeeeee, &payload[24]);
+
+  hexdump(log_info, payload, 0x20);
 
   interactive();
 }
