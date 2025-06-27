@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
   dmmap(NULL, MAPDEF);
 
   void* ptr = malloc(0x40);
-  REP2(i, 0x40) {
+  REP(i, 0x40) {
     ((uint8_t*)ptr)[i] = i;
   }
 
