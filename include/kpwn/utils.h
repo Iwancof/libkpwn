@@ -13,12 +13,6 @@
 #define __KPWN_CONCAT2(a, b) __KPWN_CONCAT(a, b)
 #define __KPWN_UNIQUE __KPWN_CONCAT2(unique_, __COUNTER__)
 
-#define EARLY(expr)                \
-  ({                               \
-    __typeof__(expr) __v = (expr); \
-    __v;                           \
-  })
-
 #define REP_FORWARD 0
 #define REP_BACKWARD 1
 
@@ -29,20 +23,11 @@
        __DIREC_HELPER((direc), idx_ident < (end), (start) <= idx_ident);  \
        idx_ident += (step) * __DIREC_HELPER(direc, 1, -1))
 
-#define __KPWN_REP_IMPL_LAZY(_1, _2, _3, _4, _5) __KPWN_REP_IMPL(_1, (_2), (_3), (_4), (_5))
-#define __KPWN_REP_IMPL_EARLY(_1, _2, _3, _4, _5) __KPWN_REP_IMPL(_1, EARLY(_2), EARLY(_3), EARLY(_4), EARLY(_5))
-
-#define __KPWN_REP_EARLY_ARG_5(idx, start, end, step, direc) __KPWN_REP_IMPL_EARLY(idx, start, end, step, direc)
-#define __KPWN_REP_EARLY_ARG_4(idx, start, end, step) __KPWN_REP_IMPL_EARLY(idx, start, end, step, REP_FORWARD)
-#define __KPWN_REP_EARLY_ARG_3(idx, start, end) __KPWN_REP_IMPL_EARLY(idx, start, end, 1, REP_FORWARD)
-#define __KPWN_REP_EARLY_ARG_2(idx, end) __KPWN_REP_IMPL_EARLY(idx, 0, end, 1, REP_FORWARD)
-#define __KPWN_REP_EARLY_ARG_1(end) __KPWN_REP_IMPL_EARLY(__KPWN_UNIQUE, 0, end, 1, REP_FORWARD)
-
-#define __KPWN_REP_LAZY_ARG_5(idx, start, end, step, direc) __KPWN_REP_IMPL_LAZY(idx, start, end, step, direc)
-#define __KPWN_REP_LAZY_ARG_4(idx, start, end, step) __KPWN_REP_IMPL_LAZY(idx, start, end, step, REP_FORWARD)
-#define __KPWN_REP_LAZY_ARG_3(idx, start, end) __KPWN_REP_IMPL_LAZY(idx, start, end, 1, REP_FORWARD)
-#define __KPWN_REP_LAZY_ARG_2(idx, end) __KPWN_REP_IMPL_LAZY(idx, 0, end, 1, REP_FORWARD)
-#define __KPWN_REP_LAZY_ARG_1(end) __KPWN_REP_IMPL_LAZY(__KPWN_UNIQUE, 0, end, 1, REP_FORWARD)
+#define __KPWN_REP_ARG_5(idx, start, end, step, direc) __KPWN_REP_IMPL(idx, start, end, step, direc)
+#define __KPWN_REP_ARG_4(idx, start, end, step) __KPWN_REP_IMPL(idx, start, end, step, REP_FORWARD)
+#define __KPWN_REP_ARG_3(idx, start, end) __KPWN_REP_IMPL(idx, start, end, 1, REP_FORWARD)
+#define __KPWN_REP_ARG_2(idx, end) __KPWN_REP_IMPL(idx, 0, end, 1, REP_FORWARD)
+#define __KPWN_REP_ARG_1(end) __KPWN_REP_IMPL(__KPWN_UNIQUE, 0, end, 1, REP_FORWARD)
 
 #define __KPWN_REP_ARG_RESOLVER(_1, _2, _3, _4, _5, NAME, ...) NAME
 
@@ -56,14 +41,10 @@
 // --> for i in (start..end by step) or for i in (end..start
 // by step)
 
-#define REP_EARLY(...)                                                                                         \
-  __KPWN_REP_ARG_RESOLVER(__VA_ARGS__, __KPWN_REP_EARLY_ARG_5, __KPWN_REP_EARLY_ARG_4, __KPWN_REP_EARLY_ARG_3, \
-                          __KPWN_REP_EARLY_ARG_2, __KPWN_REP_EARLY_ARG_1)(__VA_ARGS__)
-#define REP_LAZY(...)                                                                                       \
-  __KPWN_REP_ARG_RESOLVER(__VA_ARGS__, __KPWN_REP_LAZY_ARG_5, __KPWN_REP_LAZY_ARG_4, __KPWN_REP_LAZY_ARG_3, \
-                          __KPWN_REP_LAZY_ARG_2, __KPWN_REP_LAZY_ARG_1)(__VA_ARGS__)
+#define REP(...)                                                                                               \
+  __KPWN_REP_ARG_RESOLVER(__VA_ARGS__, __KPWN_REP_ARG_5, __KPWN_REP_ARG_4, __KPWN_REP_ARG_3, __KPWN_REP_ARG_2, \
+                          __KPWN_REP_ARG_1)(__VA_ARGS__)
 
-#define REP REP_EARLY
 #define WAIT                                                    \
   printf("waiting at %d. Press Enter to continue\n", __LINE__); \
   getc(stdin);
