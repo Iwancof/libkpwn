@@ -49,7 +49,7 @@ void interactive() {
       }
     }
     if (!commands[i].cmd) {
-      log_erro("Unknown command: %s", argv[0]);
+      log_error("Unknown command: %s", argv[0]);
     }
 
     if (exit_interactive) {
@@ -79,7 +79,7 @@ void cmd_exit(int argc, char *argv[]) {
 
 void cmd_loglevel(int argc, char *argv[]) {
   if (argc < 2) {
-    log_erro("Usage: loglevel <level>");
+    log_error("Usage: loglevel <level>");
     return;
   }
   int level = atoi(argv[1]);
@@ -99,7 +99,7 @@ void cmd_procinfo(int argc, char *argv[]) {
 void cmd_write_memory(int argc, char *argv[]) {
   // writemem <addr> [1|2|4|8] <value>
   if (argc < 4) {
-    log_erro("Usage: writemem <addr> [1|2|4|8] <value>");
+    log_error("Usage: writemem <addr> [1|2|4|8] <value>");
     return;
   }
 
@@ -108,7 +108,7 @@ void cmd_write_memory(int argc, char *argv[]) {
   unsigned long long value = strtoull(argv[3], NULL, 0);
 
   if (size != 1 && size != 2 && size != 4 && size != 8) {
-    log_erro(
+    log_error(
         "Invalid size: %zu. Must be 1, 2, 4, or 8 bytes.",
         size);
     return;
@@ -135,7 +135,7 @@ void cmd_write_memory(int argc, char *argv[]) {
 void cmd_read_memory(int argc, char *argv[]) {
   // readmem <addr> [1|2|4|8]
   if (argc < 3) {
-    log_erro("Usage: readmem <addr> [1|2|4|8]");
+    log_error("Usage: readmem <addr> [1|2|4|8]");
     return;
   }
 
@@ -143,7 +143,7 @@ void cmd_read_memory(int argc, char *argv[]) {
   size_t size = atoi(argv[2]);
 
   if (size != 1 && size != 2 && size != 4 && size != 8) {
-    log_erro(
+    log_error(
         "Invalid size: %zu. Must be 1, 2, 4, or 8 bytes.",
         size);
     return;
@@ -178,7 +178,7 @@ void cmd_vmmap(int argc, char *argv[]) {
 void cmd_hexdump(int argc, char *argv[]) {
   // hexdump <addr> <size>
   if (argc < 3) {
-    log_erro("Usage: hexdump <addr> <size>");
+    log_error("Usage: hexdump <addr> <size>");
     return;
   }
 
@@ -189,10 +189,31 @@ void cmd_hexdump(int argc, char *argv[]) {
   hexdump(log_info, addr, size);
 }
 
+void cmd_telescope(int argc, char *argv[]) {
+  // tel <addr> [<num>]
+  if (argc < 2) {
+    log_error("Usage: tel <addr> [<num>]");
+    return;
+  }
+
+  void *addr = (void *)strtoull(argv[1], NULL, 0);
+  size_t num = 10;  // default to 10 if not specified
+  if (argc > 2) {
+    num = strtoull(argv[2], NULL, 0);
+  }
+
+  hexdump(log_info, addr, num * sizeof(uint64_t));
+}
+
 void cmd_continue(int argc, char *argv[]) {
   UNUSED_ARG;
   log_info("Continuing execution...");
   exit_interactive = 1;
+}
+
+void cmd_shell(int argc, char *argv[]) {
+  UNUSED_ARG;
+  system("/bin/sh");
 }
 
 struct command_t commands[] = {
@@ -205,4 +226,6 @@ struct command_t commands[] = {
     {"hexdump", cmd_hexdump},
     {"vmmap", cmd_vmmap},
     {"continue", cmd_continue},
+    {"tel", cmd_telescope},
+    {"shell", cmd_shell},
     {NULL, NULL}};

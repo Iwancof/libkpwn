@@ -18,6 +18,7 @@ void thread_assign_to_core(int core_id);
 
 void trigger_corewin(const char *backdoor_file,
                      const char *backdoor_cmd);
-void init_billy(char **argv);
+void set_process_name(char *);
+void init_billy();
 
 #endif

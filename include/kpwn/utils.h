@@ -25,42 +25,43 @@
          __LINE__);                                  \
   getc(stdin);
 
-#define SYSCHK(eval)                              \
-  ({                                              \
-    typeof(eval) __ret = (eval);                  \
-    if (__ret < 0 || __ret == 0xffffffff ||       \
-        __ret == 0xffffffffffffffff) {            \
-      log_erro("SYSCHK error at " __FILE__        \
-               ":%d %s = %s\n",                   \
-               __LINE__, #eval, strerror(errno)); \
-      exit(EXIT_FAILURE);                         \
-    }                                             \
-    __ret;                                        \
+#define SYSCHK(eval)                               \
+  ({                                               \
+    typeof(eval) __ret = (eval);                   \
+    if (__ret < 0 || __ret == 0xffffffff ||        \
+        __ret == 0xffffffffffffffff) {             \
+      log_error("SYSCHK error at " __FILE__        \
+                ":%d %s = %s\n",                   \
+                __LINE__, #eval, strerror(errno)); \
+      exit(EXIT_FAILURE);                          \
+    }                                              \
+    __ret;                                         \
   })
 
-#define ASSERT(cond)                                   \
+#define ASSERT(cond)                                    \
+  ({                                                    \
+    if (!(cond)) {                                      \
+      log_error("ASSERT error at " __FILE__ ":%d %s\n", \
+                __LINE__, #cond);                       \
+      exit(EXIT_FAILURE);                               \
+    }                                                   \
+  })
+
+#define ASSERT_MSG(cond, msg)               \
+  ({                                        \
+    if (!(cond)) {                          \
+      log_error("ASSERT error at " __FILE__ \
+                ":%d %s: %s\n",             \
+                __LINE__, #cond, msg);      \
+      exit(EXIT_FAILURE);                   \
+    }                                       \
+  })
+
+#define DIE(msg)                                       \
   ({                                                   \
-    if (!(cond)) {                                     \
-      log_erro("ASSERT error at " __FILE__ ":%d %s\n", \
-               __LINE__, #cond);                       \
-      exit(EXIT_FAILURE);                              \
-    }                                                  \
-  })
-
-#define ASSERT_MSG(cond, msg)                              \
-  ({                                                       \
-    if (!(cond)) {                                         \
-      log_erro("ASSERT error at " __FILE__ ":%d %s: %s\n", \
-               __LINE__, #cond, msg);                      \
-      exit(EXIT_FAILURE);                                  \
-    }                                                      \
-  })
-
-#define DIE(msg)                                      \
-  ({                                                  \
-    log_erro("DIE error at " __FILE__ ":%d %s: %s\n", \
-             __LINE__, #msg, msg);                    \
-    exit(EXIT_FAILURE);                               \
+    log_error("DIE error at " __FILE__ ":%d %s: %s\n", \
+              __LINE__, #msg, msg);                    \
+    exit(EXIT_FAILURE);                                \
   })
 
 #define ARRAY_SIZE(array)              \
@@ -76,9 +77,6 @@
   })
 
 #define ARRAY_END(array) (&(array[ARRAY_SIZE(array)]))
-
-// #define MIN(a, b) ((a) < (b) ? (a) : (b))
-// #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define MIN(a, b)            \
   ({                         \

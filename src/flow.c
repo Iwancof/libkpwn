@@ -9,13 +9,14 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/personality.h>
+#include <sys/prctl.h>
 #include <unistd.h>
 
 void noaslr(int argc, char *argv[]) {
   ASSERT(1 <= argc);
 
   if (personality(ADDR_NO_RANDOMIZE) & ADDR_NO_RANDOMIZE) {
-    log_succ("killed aslr");
+    log_success("killed aslr");
     return;
   }
 
@@ -31,7 +32,7 @@ void process_assign_to_core(int core_id) {
   SYSCHK(
       sched_setaffinity(getpid(), sizeof(cpuset), &cpuset));
 
-  log_succ("assigned to core %d", core_id);
+  log_success("assigned to core %d", core_id);
 }
 
 void thread_assign_to_core(int core_id) {
@@ -41,7 +42,7 @@ void thread_assign_to_core(int core_id) {
   SYSCHK(pthread_setaffinity_np(pthread_self(),
                                 sizeof(cpuset), &cpuset));
 
-  log_succ("Thread assigned to core %d", core_id);
+  log_success("Thread assigned to core %d", core_id);
 }
 
 void trigger_corewin(const char *backdoor_file,
@@ -57,17 +58,21 @@ void trigger_corewin(const char *backdoor_file,
     log_info("core dumping...");
     *(volatile uint8_t *)0 = 0;
 
-    log_erro("could not send SEGV signal");
+    log_error("could not send SEGV signal");
     exit(-1);
   }
   pause();
 }
 
-void init_billy(char **argv) {
+void set_process_name(char *name) {
+  SYSCHK(prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0));
+}
+
+void init_billy() {
   if (SYSCHK(fork()) == 0) {
     log_info("spawned billy");
 
-    strcpy(argv[0], "billy");
+    set_process_name("billy");
     pause();
   }
 }

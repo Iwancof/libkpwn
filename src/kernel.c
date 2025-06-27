@@ -6,7 +6,7 @@
 void* kbase = NULL;
 
 void set_kbase(void* addr) {
-  log_succ("setting kernel base address to %p", addr);
+  log_success("setting kernel base address to %p", addr);
   kbase = addr;
 }
 
@@ -50,7 +50,7 @@ size_t call_ptr(void* fptr, int argc, va_list list) {
                 args[5]);
     }
     default: {
-      log_erro("call_ptr: unsupported argument count %d",
+      log_error("call_ptr: unsupported argument count %d",
                argc);
       ASSERT(0);
       return 0;  // unreachable
@@ -73,7 +73,7 @@ size_t kfunc_off(void* fptr, int argc, ...) {
   va_start(list, argc);
 
   if (kbase == NULL) {
-    log_erro(
+    log_error(
         "kbase is not initialized. you probably forget "
         "initialize or use kfunc_abs instead of kfunc_off");
     ASSERT(0);

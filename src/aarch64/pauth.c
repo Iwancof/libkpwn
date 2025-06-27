@@ -1,17 +1,17 @@
-#include <assert.h>
 #include <kpwn/aarch64/pauth.h>
+#include <kpwn/utils.h>
 #include <stdint.h>
 
 #define MAKE_64BIT_MASK(shift, length) \
   (((~0ULL) >> (64 - (length))) << (shift))
 
 uint64_t extract64(uint64_t value, int start, int length) {
-  assert(start >= 0 && length > 0 && length <= 64 - start);
+  ASSERT(start >= 0 && length > 0 && length <= 64 - start);
   return (value >> start) & (~0ULL >> (64 - length));
 }
 
 uint32_t extract32(uint32_t value, int start, int length) {
-  assert(start >= 0 && length > 0 && length <= 32 - start);
+  ASSERT(start >= 0 && length > 0 && length <= 32 - start);
   return (value >> start) & (~0U >> (32 - length));
 }
 
@@ -215,11 +215,6 @@ uint64_t pauth_computepac_architected(uint64_t data,
   };
   const uint64_t alpha = 0xC0AC29B7C97C50DDull;
   int iterations = isqarma3 ? 2 : 4;
-  /*
-   * Note that in the ARM pseudocode, key0 contains bits
-   * <127:64> and key1 contains bits <63:0> of the 128-bit
-   * key.
-   */
   uint64_t key0 = key.hi, key1 = key.lo;
   uint64_t workingval, runningmod, roundkey, modk0;
   int i;
@@ -287,10 +282,7 @@ uint64_t pauth_computepac_architected(uint64_t data,
 }
 
 int64_t sextract64(uint64_t value, int start, int length) {
-  assert(start >= 0 && length > 0 && length <= 64 - start);
-  /* Note that this implementation relies on right shift of
-   * signed integers being an arithmetic shift.
-   */
+  ASSERT(start >= 0 && length > 0 && length <= 64 - start);
   return ((int64_t)(value << (64 - length - start))) >>
          (64 - length);
 }
@@ -304,7 +296,7 @@ uint64_t pauth_computepac(uint64_t data, uint64_t modifier,
 uint64_t deposit64(uint64_t value, int start, int length,
                    uint64_t fieldval) {
   uint64_t mask;
-  assert(start >= 0 && length > 0 && length <= 64 - start);
+  ASSERT(start >= 0 && length > 0 && length <= 64 - start);
   mask = (~0ULL >> (64 - length)) << start;
   return (value & ~mask) | ((fieldval << start) & mask);
 }

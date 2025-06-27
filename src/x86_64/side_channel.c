@@ -67,18 +67,18 @@ size_t kasld_amd_with_conf(size_t start, size_t end,
         count_sort(found_bases, num_confirm);
 
     if (majority.counter > num_confirm / 2) {
-      log_succ("[side channel] found kbase at %lx",
+      log_success("[side channel] found kbase at %lx",
                majority.data);
       return majority.data;
     }
   }
 
-  log_erro("could not get majority voting...");
+  log_error("could not get majority voting...");
   return 0;
 }
 
 size_t kasld_intel() {
-  log_erro("Unimplemented");
+  log_error("Unimplemented");
 }
 
 size_t kasld() {
@@ -88,7 +88,7 @@ size_t kasld() {
     case x86_64_amd:
       return kasld_amd();
     default:
-      log_erro("Unsupported architecture for kasld");
+      log_error("Unsupported architecture for kasld");
       return 0;
   }
 }

@@ -3,11 +3,12 @@
 
 #include <stdio.h>
 
-#define LOG_INFO 0
-#define LOG_WARN 1
-#define LOG_ERROR 2
-#define LOG_SUCCESS 3
-#define LOG_QUITE 4
+#define LOG_DEBUG 0
+#define LOG_INFO 1
+#define LOG_WARN 2
+#define LOG_ERROR 3
+#define LOG_SUCCESS 4
+#define LOG_QUITE 5
 
 extern int log_level;
 extern FILE* default_logfile;
@@ -21,10 +22,11 @@ typedef void logf_t(const char* fmt, ...);
   void f_##func(FILE* dest, const char* fmt, ...); \
   void func(const char* fmt, ...);
 
-DEFINE_LOG_FUNC(log_erro);
-DEFINE_LOG_FUNC(log_warn);
+DEFINE_LOG_FUNC(log_debug);
 DEFINE_LOG_FUNC(log_info);
-DEFINE_LOG_FUNC(log_succ);
+DEFINE_LOG_FUNC(log_warn);
+DEFINE_LOG_FUNC(log_error);
+DEFINE_LOG_FUNC(log_success);
 DEFINE_LOG_FUNC(log_null);
 
 #undef DEFINE_LOG_FUNC

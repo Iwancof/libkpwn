@@ -31,7 +31,7 @@ void proc_info(logf_t log) {
         target[len] = '\0';  // null-terminate the string
         log("%s -> %s", entry->d_name, target);
       } else {
-        log_erro("readlink error for %s: %s", link_path,
+        log_error("readlink error for %s: %s", link_path,
                  strerror(errno));
       }
     }
@@ -60,7 +60,7 @@ int compare_count_sort_data(const void* a, const void* b) {
 struct count_sort_data count_sort(const uint64_t* data,
                                   size_t len) {
   if (len == 0) {
-    log_erro("[count_sort]: empty data array");
+    log_error("[count_sort]: empty data array");
     return (struct count_sort_data){0, 0};
   }
   struct count_sort_data count_data[len];

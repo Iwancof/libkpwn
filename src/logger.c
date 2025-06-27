@@ -21,14 +21,16 @@ void set_logfile(FILE* file) {
 
 static const char* log_prefix(int level) {
   switch (level) {
-    case LOG_ERROR:
-      return "[ " LOG_COLOR_RED "ERRO" LOG_COLOR_RESET " ]";
-    case LOG_WARN:
-      return "[ " LOG_COLOR_YELLOW "WARN" LOG_COLOR_RESET
-             " ]";
+    case LOG_DEBUG:
+      return "[ " LOG_COLOR_RED "DEBG" LOG_COLOR_RESET " ]";
     case LOG_INFO:
       return "[ " LOG_COLOR_BLUE "INFO" LOG_COLOR_RESET
              " ]";
+    case LOG_WARN:
+      return "[ " LOG_COLOR_YELLOW "WARN" LOG_COLOR_RESET
+             " ]";
+    case LOG_ERROR:
+      return "[ " LOG_COLOR_RED "ERRO" LOG_COLOR_RESET " ]";
     case LOG_SUCCESS:
       return "[ " LOG_COLOR_GREEN "SUCC" LOG_COLOR_RESET
              " ]";
@@ -42,7 +44,7 @@ void log_impl(FILE* dest, int level, const char* fmt,
   if (level < log_level)
     return;
 
-  fprintf(dest, log_prefix(level));
+  fprintf(dest, "%s", log_prefix(level));
   fputc(' ', dest);
   vfprintf(dest, fmt, list);
   fputc('\n', dest);
@@ -63,10 +65,11 @@ void log_impl(FILE* dest, int level, const char* fmt,
     va_end(list);                                   \
   }
 
-DEFINE_LOG_FUNC(log_erro, LOG_ERROR);
-DEFINE_LOG_FUNC(log_warn, LOG_WARN);
+DEFINE_LOG_FUNC(log_debug, LOG_DEBUG);
 DEFINE_LOG_FUNC(log_info, LOG_INFO);
-DEFINE_LOG_FUNC(log_succ, LOG_SUCCESS);
+DEFINE_LOG_FUNC(log_warn, LOG_WARN);
+DEFINE_LOG_FUNC(log_error, LOG_ERROR);
+DEFINE_LOG_FUNC(log_success, LOG_SUCCESS);
 
 void f_log_null(FILE* dest, const char* fmt, ...) {
   (void)dest;
