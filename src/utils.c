@@ -22,31 +22,25 @@ void proc_info(logf_t log) {
   while ((entry = readdir(dir)) != NULL) {
     if (entry->d_type == DT_LNK) {
       char link_path[0x200];
-      snprintf(link_path, sizeof(link_path), "%s/%s", path,
-               entry->d_name);
+      snprintf(link_path, sizeof(link_path), "%s/%s", path, entry->d_name);
       char target[0x200];
-      ssize_t len =
-          readlink(link_path, target, sizeof(target) - 1);
+      ssize_t len = readlink(link_path, target, sizeof(target) - 1);
       if (len != -1) {
         target[len] = '\0';  // null-terminate the string
         log("%s -> %s", entry->d_name, target);
       } else {
-        log_error("readlink error for %s: %s", link_path,
-                 strerror(errno));
+        log_error("readlink error for %s: %s", link_path, strerror(errno));
       }
     }
   }
   closedir(dir);
 }
 
-const char root_without_password[] =
-    "root::0:0:root:/root:/bin/sh";
+const char root_without_password[] = "root::0:0:root:/root:/bin/sh";
 
 int compare_count_sort_data(const void* a, const void* b) {
-  const struct count_sort_data* data_a =
-      (const struct count_sort_data*)a;
-  const struct count_sort_data* data_b =
-      (const struct count_sort_data*)b;
+  const struct count_sort_data* data_a = (const struct count_sort_data*)a;
+  const struct count_sort_data* data_b = (const struct count_sort_data*)b;
 
   if (data_a->counter < data_b->counter) {
     return -1;
@@ -57,8 +51,7 @@ int compare_count_sort_data(const void* a, const void* b) {
   }
 }
 
-struct count_sort_data count_sort(const uint64_t* data,
-                                  size_t len) {
+struct count_sort_data count_sort(const uint64_t* data, size_t len) {
   if (len == 0) {
     log_error("[count_sort]: empty data array");
     return (struct count_sort_data){0, 0};
@@ -80,9 +73,7 @@ struct count_sort_data count_sort(const uint64_t* data,
   next:
   }
 
-  qsort(count_data, num_unique,
-        sizeof(struct count_sort_data),
-        compare_count_sort_data);
+  qsort(count_data, num_unique, sizeof(struct count_sort_data), compare_count_sort_data);
 
   if (count_data[0].counter < len / 2) {
     log_warn("[count_sort]: no majority element found");

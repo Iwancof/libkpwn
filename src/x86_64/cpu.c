@@ -8,18 +8,16 @@ struct cpu_state cpu_now() {
       "movq %%rsp, %2\n"
       "pushfq\n"
       "popq  %3\n"
-      : "=r"(ret.cs), "=r"(ret.ss), "=r"(ret.rsp),
-        "=r"(ret.rflags)
+      : "=r"(ret.cs), "=r"(ret.ss), "=r"(ret.rsp), "=r"(ret.rflags)
       :
       : "memory");
 
   return ret;
 }
 
-void print_cpu_state(logf_t log,
-                     const struct cpu_state* state) {
-  log("[cpu state] cs = %lx", state->cs);
-  log("[cpu state] ss = %lx", state->ss);
-  log("[cpu state] rsp = %lx", state->rsp);
-  log("[cpu state] rflags = %lx", state->rflags);
+void print_cpu_state(logf_t log, const struct cpu_state* state) {
+  log("[cpu state] cs = %#lx", state->cs);
+  log("[cpu state] ss = %#lx", state->ss);
+  log("[cpu state] rsp = %#lx", state->rsp);
+  log("[cpu state] rflags = %#lx", state->rflags);
 }

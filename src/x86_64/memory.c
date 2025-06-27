@@ -3,9 +3,7 @@
 
 const pgaddr pg_null = {.ptr = 0};
 
-pgaddr from_pti(unsigned long pgd, unsigned long pud,
-                unsigned long pmd, unsigned long pte,
-                unsigned long byte) {
+pgaddr from_pti(unsigned long pgd, unsigned long pud, unsigned long pmd, unsigned long pte, unsigned long byte) {
   pgaddr ret = {
       .pgd = pgd,
       .pud = pud,
@@ -17,15 +15,12 @@ pgaddr from_pti(unsigned long pgd, unsigned long pud,
   return ret;
 }
 
-void* pti_mmap(logf_t log, unsigned long pgd,
-               unsigned long pud, unsigned long pmd,
-               unsigned long pte, size_t len, int prot,
-               int flags, int fildes, off_t off) {
+void* pti_mmap(logf_t log, unsigned long pgd, unsigned long pud, unsigned long pmd, unsigned long pte, size_t len,
+               int prot, int flags, int fildes, off_t off) {
   void* dest = from_pti(pgd, pud, pmd, pte, 0).ptr;
   void* ret = mmap(dest, len, prot, flags, fildes, off);
 
-  log("pti_mmap(%p, %lx, %x, %x, %d, %x) = %p", dest, len,
-      prot, flags, fildes, off, ret);
+  log("pti_mmap(%p, %#lx, %#x, %#x, %d, %#lx) = %p", dest, len, prot, flags, fildes, off, ret);
 
   return ret;
 }

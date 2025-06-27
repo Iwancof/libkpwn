@@ -33,25 +33,19 @@ size_t call_ptr(void* fptr, int argc, va_list list) {
       return ft(args[0], args[1], args[2]);
     }
     case 4: {
-      size_t (*ft)(size_t a, size_t b, size_t c, size_t d) =
-          fptr;
+      size_t (*ft)(size_t a, size_t b, size_t c, size_t d) = fptr;
       return ft(args[0], args[1], args[2], args[3]);
     }
     case 5: {
-      size_t (*ft)(size_t a, size_t b, size_t c, size_t d,
-                   size_t e) = fptr;
-      return ft(args[0], args[1], args[2], args[3],
-                args[4]);
+      size_t (*ft)(size_t a, size_t b, size_t c, size_t d, size_t e) = fptr;
+      return ft(args[0], args[1], args[2], args[3], args[4]);
     }
     case 6: {
-      size_t (*ft)(size_t a, size_t b, size_t c, size_t d,
-                   size_t e, size_t f) = fptr;
-      return ft(args[0], args[1], args[2], args[3], args[4],
-                args[5]);
+      size_t (*ft)(size_t a, size_t b, size_t c, size_t d, size_t e, size_t f) = fptr;
+      return ft(args[0], args[1], args[2], args[3], args[4], args[5]);
     }
     default: {
-      log_error("call_ptr: unsupported argument count %d",
-               argc);
+      log_error("call_ptr: unsupported argument count %d", argc);
       ASSERT(0);
       return 0;  // unreachable
     }
