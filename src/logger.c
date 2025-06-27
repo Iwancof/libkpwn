@@ -24,23 +24,19 @@ static const char* log_prefix(int level) {
     case LOG_DEBUG:
       return "[ " LOG_COLOR_RED "DEBG" LOG_COLOR_RESET " ]";
     case LOG_INFO:
-      return "[ " LOG_COLOR_BLUE "INFO" LOG_COLOR_RESET
-             " ]";
+      return "[ " LOG_COLOR_BLUE "INFO" LOG_COLOR_RESET " ]";
     case LOG_WARN:
-      return "[ " LOG_COLOR_YELLOW "WARN" LOG_COLOR_RESET
-             " ]";
+      return "[ " LOG_COLOR_YELLOW "WARN" LOG_COLOR_RESET " ]";
     case LOG_ERROR:
       return "[ " LOG_COLOR_RED "ERRO" LOG_COLOR_RESET " ]";
     case LOG_SUCCESS:
-      return "[ " LOG_COLOR_GREEN "SUCC" LOG_COLOR_RESET
-             " ]";
+      return "[ " LOG_COLOR_GREEN "SUCC" LOG_COLOR_RESET " ]";
     default:
       return "[ UNKN ]";
   }
 }
 
-void log_impl(FILE* dest, int level, const char* fmt,
-              va_list list) {
+void log_impl(FILE* dest, int level, const char* fmt, va_list list) {
   if (level < log_level)
     return;
 

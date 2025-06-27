@@ -2,8 +2,7 @@
 #include <kpwn/utils.h>
 #include <stdint.h>
 
-#define MAKE_64BIT_MASK(shift, length) \
-  (((~0ULL) >> (64 - (length))) << (shift))
+#define MAKE_64BIT_MASK(shift, length) (((~0ULL) >> (64 - (length))) << (shift))
 
 uint64_t extract64(uint64_t value, int start, int length) {
   ASSERT(start >= 0 && length > 0 && length <= 64 - start);
@@ -69,8 +68,7 @@ uint64_t pac_cell_inv_shuffle(uint64_t i) {
 
 uint64_t pac_sub(uint64_t i) {
   static const uint8_t sub[16] = {
-      0xb, 0x6, 0x8, 0xf, 0xc, 0x0, 0x9, 0xe,
-      0x3, 0x7, 0x4, 0x5, 0xd, 0x2, 0x1, 0xa,
+      0xb, 0x6, 0x8, 0xf, 0xc, 0x0, 0x9, 0xe, 0x3, 0x7, 0x4, 0x5, 0xd, 0x2, 0x1, 0xa,
   };
   uint64_t o = 0;
   int b;
@@ -83,8 +81,7 @@ uint64_t pac_sub(uint64_t i) {
 
 uint64_t pac_sub1(uint64_t i) {
   static const uint8_t sub1[16] = {
-      0xa, 0xd, 0xe, 0x6, 0xf, 0x7, 0x3, 0x5,
-      0x9, 0x8, 0x0, 0xc, 0xb, 0x1, 0x2, 0x4,
+      0xa, 0xd, 0xe, 0x6, 0xf, 0x7, 0x3, 0x5, 0x9, 0x8, 0x0, 0xc, 0xb, 0x1, 0x2, 0x4,
   };
   uint64_t o = 0;
   int b;
@@ -97,8 +94,7 @@ uint64_t pac_sub1(uint64_t i) {
 
 uint64_t pac_inv_sub(uint64_t i) {
   static const uint8_t inv_sub[16] = {
-      0x5, 0xe, 0xd, 0x8, 0xa, 0xb, 0x1, 0x9,
-      0x2, 0x6, 0xf, 0x0, 0x4, 0xc, 0x7, 0x3,
+      0x5, 0xe, 0xd, 0x8, 0xa, 0xb, 0x1, 0x9, 0x2, 0x6, 0xf, 0x0, 0x4, 0xc, 0x7, 0x3,
   };
   uint64_t o = 0;
   int b;
@@ -127,14 +123,10 @@ uint64_t pac_mult(uint64_t i) {
     i8 = extract64(i, b + 8 * 4, 4);
     ic = extract64(i, b + 12 * 4, 4);
 
-    t0 =
-        rot_cell(i8, 1) ^ rot_cell(i4, 2) ^ rot_cell(i0, 1);
-    t1 =
-        rot_cell(ic, 1) ^ rot_cell(i4, 1) ^ rot_cell(i0, 2);
-    t2 =
-        rot_cell(ic, 2) ^ rot_cell(i8, 1) ^ rot_cell(i0, 1);
-    t3 =
-        rot_cell(ic, 1) ^ rot_cell(i8, 2) ^ rot_cell(i4, 1);
+    t0 = rot_cell(i8, 1) ^ rot_cell(i4, 2) ^ rot_cell(i0, 1);
+    t1 = rot_cell(ic, 1) ^ rot_cell(i4, 1) ^ rot_cell(i0, 2);
+    t2 = rot_cell(ic, 2) ^ rot_cell(i8, 1) ^ rot_cell(i0, 1);
+    t3 = rot_cell(ic, 1) ^ rot_cell(i8, 2) ^ rot_cell(i4, 1);
 
     o |= (uint64_t)t3 << b;
     o |= (uint64_t)t2 << (b + 4 * 4);
@@ -204,14 +196,9 @@ uint64_t tweak_inv_shuffle(uint64_t i) {
   return o;
 }
 
-uint64_t pauth_computepac_architected(uint64_t data,
-                                      uint64_t modifier,
-                                      pauth_key key,
-                                      int isqarma3) {
+uint64_t pauth_computepac_architected(uint64_t data, uint64_t modifier, pauth_key key, int isqarma3) {
   static const uint64_t RC[5] = {
-      0x0000000000000000ull, 0x13198A2E03707344ull,
-      0xA4093822299F31D0ull, 0x082EFA98EC4E6C89ull,
-      0x452821E638D01377ull,
+      0x0000000000000000ull, 0x13198A2E03707344ull, 0xA4093822299F31D0ull, 0x082EFA98EC4E6C89ull, 0x452821E638D01377ull,
   };
   const uint64_t alpha = 0xC0AC29B7C97C50DDull;
   int iterations = isqarma3 ? 2 : 4;
@@ -283,26 +270,21 @@ uint64_t pauth_computepac_architected(uint64_t data,
 
 int64_t sextract64(uint64_t value, int start, int length) {
   ASSERT(start >= 0 && length > 0 && length <= 64 - start);
-  return ((int64_t)(value << (64 - length - start))) >>
-         (64 - length);
+  return ((int64_t)(value << (64 - length - start))) >> (64 - length);
 }
 
-uint64_t pauth_computepac(uint64_t data, uint64_t modifier,
-                          pauth_key key) {
-  return pauth_computepac_architected(data, modifier, key,
-                                      0);
+uint64_t pauth_computepac(uint64_t data, uint64_t modifier, pauth_key key) {
+  return pauth_computepac_architected(data, modifier, key, 0);
 }
 
-uint64_t deposit64(uint64_t value, int start, int length,
-                   uint64_t fieldval) {
+uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval) {
   uint64_t mask;
   ASSERT(start >= 0 && length > 0 && length <= 64 - start);
   mask = (~0ULL >> (64 - length)) << start;
   return (value & ~mask) | ((fieldval << start) & mask);
 }
 
-uint64_t pauth_addpac(uint64_t ptr, uint64_t modifier,
-                      pauth_key key) {
+uint64_t pauth_addpac(uint64_t ptr, uint64_t modifier, pauth_key key) {
   uint64_t pac, ext_ptr, ext;
   int64_t test;
   int bot_bit, top_bit;
@@ -322,8 +304,7 @@ uint64_t pauth_addpac(uint64_t ptr, uint64_t modifier,
 
   pac ^= ptr;
   ptr &= MAKE_64BIT_MASK(0, bot_bit);
-  pac &= ~(MAKE_64BIT_MASK(55, 1) |
-           MAKE_64BIT_MASK(0, bot_bit));
+  pac &= ~(MAKE_64BIT_MASK(55, 1) | MAKE_64BIT_MASK(0, bot_bit));
   ext &= MAKE_64BIT_MASK(55, 1);
   return pac | ext | ptr;
 }

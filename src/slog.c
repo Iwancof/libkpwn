@@ -13,7 +13,7 @@ void *lgmmap(logf_t log, void *addr, size_t len, int prot, int flags, int fildes
 }
 
 void *dmmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off) {
-  return SYSCHK(lgmmap(log_info, addr, len, prot, flags, fildes, off));
+  return SYSCHK(lgmmap(log_debug, addr, len, prot, flags, fildes, off));
 }
 
 int lgmunmap(logf_t log, void *addr, size_t len) {
@@ -23,7 +23,7 @@ int lgmunmap(logf_t log, void *addr, size_t len) {
 }
 
 int dunmap(void *addr, size_t len) {
-  return SYSCHK(lgmunmap(log_info, addr, len));
+  return SYSCHK(lgmunmap(log_debug, addr, len));
 }
 
 void *lgmremap(logf_t log, void *addr, size_t old, size_t new, int flags) {
@@ -33,5 +33,5 @@ void *lgmremap(logf_t log, void *addr, size_t old, size_t new, int flags) {
 }
 
 void *dremap(void *addr, size_t old, size_t new, int flags) {
-  return SYSCHK(lgmremap(log_info, addr, old, new, flags));
+  return SYSCHK(lgmremap(log_debug, addr, old, new, flags));
 }
