@@ -16,7 +16,7 @@ extern FILE* default_logfile;
 void log_init();
 void set_logfile(FILE* file);
 
-typedef void logf_t(const char* fmt, ...);
+typedef void logf_t(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 #define DEFINE_LOG_FUNC(func)                                                            \
   void f_##func(FILE* dest, const char* fmt, ...) __attribute__((format(printf, 2, 3))); \
