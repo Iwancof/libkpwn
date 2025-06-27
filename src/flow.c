@@ -64,10 +64,13 @@ void set_process_name(char *name) {
 }
 
 void init_billy() {
-  if (SYSCHK(fork()) == 0) {
+  pid_t p = SYSCHK(fork());
+  if (p == 0) {
     log_info("spawned billy");
 
     set_process_name("billy");
     pause();
+  } else {
+    log_debug("billy spawned. pid = %d", p);
   }
 }
