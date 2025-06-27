@@ -86,8 +86,7 @@ void cmd_loglevel(int argc, char *argv[]) {
   int old = log_level;
   log_level = level;
 
-  log_info("Log level changed from %d to %d", old,
-           log_level);
+  log_info("Log level changed from %d to %d", old, log_level);
 }
 
 void cmd_procinfo(int argc, char *argv[]) {
@@ -108,9 +107,7 @@ void cmd_write_memory(int argc, char *argv[]) {
   unsigned long long value = strtoull(argv[3], NULL, 0);
 
   if (size != 1 && size != 2 && size != 4 && size != 8) {
-    log_error(
-        "Invalid size: %zu. Must be 1, 2, 4, or 8 bytes.",
-        size);
+    log_error("Invalid size: %zu. Must be 1, 2, 4, or 8 bytes.", size);
     return;
   }
 
@@ -143,9 +140,7 @@ void cmd_read_memory(int argc, char *argv[]) {
   size_t size = atoi(argv[2]);
 
   if (size != 1 && size != 2 && size != 4 && size != 8) {
-    log_error(
-        "Invalid size: %zu. Must be 1, 2, 4, or 8 bytes.",
-        size);
+    log_error("Invalid size: %zu. Must be 1, 2, 4, or 8 bytes.", size);
     return;
   }
 
@@ -153,19 +148,16 @@ void cmd_read_memory(int argc, char *argv[]) {
 
   switch (size) {
     case 1:
-      log_info("Value at %p: %llx", addr, *(uint8_t *)addr);
+      log_info("Value at %p: %hhx", addr, *(uint8_t *)addr);
       break;
     case 2:
-      log_info("Value at %p: %llx", addr,
-               *(uint16_t *)addr);
+      log_info("Value at %p: %hx", addr, *(uint16_t *)addr);
       break;
     case 4:
-      log_info("Value at %p: %llx", addr,
-               *(uint32_t *)addr);
+      log_info("Value at %p: %x", addr, *(uint32_t *)addr);
       break;
     case 8:
-      log_info("Value at %p: %llx", addr,
-               *(uint64_t *)addr);
+      log_info("Value at %p: %lx", addr, *(uint64_t *)addr);
       break;
   }
 }
@@ -216,16 +208,15 @@ void cmd_shell(int argc, char *argv[]) {
   system("/bin/sh");
 }
 
-struct command_t commands[] = {
-    {"exit", cmd_exit},
-    {"help", cmd_help},
-    {"loglevel", cmd_loglevel},
-    {"procinfo", cmd_procinfo},
-    {"writemem", cmd_write_memory},
-    {"readmem", cmd_read_memory},
-    {"hexdump", cmd_hexdump},
-    {"vmmap", cmd_vmmap},
-    {"continue", cmd_continue},
-    {"tel", cmd_telescope},
-    {"shell", cmd_shell},
-    {NULL, NULL}};
+struct command_t commands[] = {{"exit", cmd_exit},
+                               {"help", cmd_help},
+                               {"loglevel", cmd_loglevel},
+                               {"procinfo", cmd_procinfo},
+                               {"writemem", cmd_write_memory},
+                               {"readmem", cmd_read_memory},
+                               {"hexdump", cmd_hexdump},
+                               {"vmmap", cmd_vmmap},
+                               {"continue", cmd_continue},
+                               {"tel", cmd_telescope},
+                               {"shell", cmd_shell},
+                               {NULL, NULL}};

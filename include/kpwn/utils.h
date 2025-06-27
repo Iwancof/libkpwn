@@ -3,65 +3,101 @@
 
 #include <errno.h>
 #include <kpwn/logger.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define CONCAT(a, b) a##b
-#define CONCAT2(a, b) CONCAT(a, b)
-#define UNIQUE CONCAT2(unique_, __COUNTER__)
+#define __KPWN_CONCAT(a, b) a##b
+#define __KPWN_CONCAT2(a, b) __KPWN_CONCAT(a, b)
+#define __KPWN_UNIQUE __KPWN_CONCAT2(unique_, __COUNTER__)
 
-#define REP3(s, i, n) for (size_t i = (s); i < (n); i++)
-#define REP2(i, n) REP3(0, i, n)
-#define REP1(n) REP2(UNIQUE, n)
+#define EARLY(expr)                \
+  ({                               \
+    __typeof__(expr) __v = (expr); \
+    __v;                           \
+  })
 
-#undef CONCAT
-#undef CONCAT2
-#undef UNIQUE
+#define REP_FORWARD 0
+#define REP_BACKWARD 1
 
-#define WAIT                                         \
-  printf("waiting at %d. Press Enter to continue\n", \
-         __LINE__);                                  \
+#define __DIREC_HELPER(direc, forward, backward) (((direc) == REP_FORWARD) ? (forward) : (backward))
+
+#define __KPWN_REP_IMPL(idx_ident, start, end, step, direc)               \
+  for (ptrdiff_t idx_ident = __DIREC_HELPER((direc), (start), (end) - 1); \
+       __DIREC_HELPER((direc), idx_ident < (end), (start) <= idx_ident);  \
+       idx_ident += (step) * __DIREC_HELPER(direc, 1, -1))
+
+#define __KPWN_REP_IMPL_LAZY(_1, _2, _3, _4, _5) __KPWN_REP_IMPL(_1, (_2), (_3), (_4), (_5))
+#define __KPWN_REP_IMPL_EARLY(_1, _2, _3, _4, _5) __KPWN_REP_IMPL(_1, EARLY(_2), EARLY(_3), EARLY(_4), EARLY(_5))
+
+#define __KPWN_REP_EARLY_ARG_5(idx, start, end, step, direc) __KPWN_REP_IMPL_EARLY(idx, start, end, step, direc)
+#define __KPWN_REP_EARLY_ARG_4(idx, start, end, step) __KPWN_REP_IMPL_EARLY(idx, start, end, step, REP_FORWARD)
+#define __KPWN_REP_EARLY_ARG_3(idx, start, end) __KPWN_REP_IMPL_EARLY(idx, start, end, 1, REP_FORWARD)
+#define __KPWN_REP_EARLY_ARG_2(idx, end) __KPWN_REP_IMPL_EARLY(idx, 0, end, 1, REP_FORWARD)
+#define __KPWN_REP_EARLY_ARG_1(end) __KPWN_REP_IMPL_EARLY(__KPWN_UNIQUE, 0, end, 1, REP_FORWARD)
+
+#define __KPWN_REP_LAZY_ARG_5(idx, start, end, step, direc) __KPWN_REP_IMPL_LAZY(idx, start, end, step, direc)
+#define __KPWN_REP_LAZY_ARG_4(idx, start, end, step) __KPWN_REP_IMPL_LAZY(idx, start, end, step, REP_FORWARD)
+#define __KPWN_REP_LAZY_ARG_3(idx, start, end) __KPWN_REP_IMPL_LAZY(idx, start, end, 1, REP_FORWARD)
+#define __KPWN_REP_LAZY_ARG_2(idx, end) __KPWN_REP_IMPL_LAZY(idx, 0, end, 1, REP_FORWARD)
+#define __KPWN_REP_LAZY_ARG_1(end) __KPWN_REP_IMPL_LAZY(__KPWN_UNIQUE, 0, end, 1, REP_FORWARD)
+
+#define __KPWN_REP_ARG_RESOLVER(_1, _2, _3, _4, _5, NAME, ...) NAME
+
+// repeat macro
+//
+// REP(n): for (0..n)
+// REP(i, n): for i in (0..n)
+// REP(i, start, end): for i in (start..end)
+// REP(i, start, end, step): for i in (start..end by step)
+// REP(i, start, end, step, direc): direc(forward, backward)
+// --> for i in (start..end by step) or for i in (end..start
+// by step)
+
+#define REP_EARLY(...)                                                                                         \
+  __KPWN_REP_ARG_RESOLVER(__VA_ARGS__, __KPWN_REP_EARLY_ARG_5, __KPWN_REP_EARLY_ARG_4, __KPWN_REP_EARLY_ARG_3, \
+                          __KPWN_REP_EARLY_ARG_2, __KPWN_REP_EARLY_ARG_1)(__VA_ARGS__)
+#define REP_LAZY(...)                                                                                       \
+  __KPWN_REP_ARG_RESOLVER(__VA_ARGS__, __KPWN_REP_LAZY_ARG_5, __KPWN_REP_LAZY_ARG_4, __KPWN_REP_LAZY_ARG_3, \
+                          __KPWN_REP_LAZY_ARG_2, __KPWN_REP_LAZY_ARG_1)(__VA_ARGS__)
+
+#define REP REP_EARLY
+#define WAIT                                                    \
+  printf("waiting at %d. Press Enter to continue\n", __LINE__); \
   getc(stdin);
 
-#define SYSCHK(eval)                               \
-  ({                                               \
-    typeof(eval) __ret = (eval);                   \
-    if (__ret < 0 || __ret == 0xffffffff ||        \
-        __ret == 0xffffffffffffffff) {             \
-      log_error("SYSCHK error at " __FILE__        \
-                ":%d %s = %s\n",                   \
-                __LINE__, #eval, strerror(errno)); \
-      exit(EXIT_FAILURE);                          \
-    }                                              \
-    __ret;                                         \
+#define SYSCHK(eval)                                                                            \
+  ({                                                                                            \
+    typeof(eval) __ret = (eval);                                                                \
+    if (__ret < 0 || __ret == 0xffffffff || __ret == 0xffffffffffffffff) {                      \
+      log_error("SYSCHK error at " __FILE__ ":%d %s = %s\n", __LINE__, #eval, strerror(errno)); \
+      exit(EXIT_FAILURE);                                                                       \
+    }                                                                                           \
+    __ret;                                                                                      \
   })
 
-#define ASSERT(cond)                                    \
-  ({                                                    \
-    if (!(cond)) {                                      \
-      log_error("ASSERT error at " __FILE__ ":%d %s\n", \
-                __LINE__, #cond);                       \
-      exit(EXIT_FAILURE);                               \
-    }                                                   \
+#define ASSERT(cond)                                                      \
+  ({                                                                      \
+    if (!(cond)) {                                                        \
+      log_error("ASSERT error at " __FILE__ ":%d %s\n", __LINE__, #cond); \
+      exit(EXIT_FAILURE);                                                 \
+    }                                                                     \
   })
 
-#define ASSERT_MSG(cond, msg)               \
-  ({                                        \
-    if (!(cond)) {                          \
-      log_error("ASSERT error at " __FILE__ \
-                ":%d %s: %s\n",             \
-                __LINE__, #cond, msg);      \
-      exit(EXIT_FAILURE);                   \
-    }                                       \
+#define ASSERT_MSG(cond, msg)                                                      \
+  ({                                                                               \
+    if (!(cond)) {                                                                 \
+      log_error("ASSERT error at " __FILE__ ":%d %s: %s\n", __LINE__, #cond, msg); \
+      exit(EXIT_FAILURE);                                                          \
+    }                                                                              \
   })
 
-#define DIE(msg)                                       \
-  ({                                                   \
-    log_error("DIE error at " __FILE__ ":%d %s: %s\n", \
-              __LINE__, #msg, msg);                    \
-    exit(EXIT_FAILURE);                                \
+#define DIE(msg)                                                             \
+  ({                                                                         \
+    log_error("DIE error at " __FILE__ ":%d %s: %s\n", __LINE__, #msg, msg); \
+    exit(EXIT_FAILURE);                                                      \
   })
 
 #define ARRAY_SIZE(array)              \
@@ -101,8 +137,7 @@ struct count_sort_data {
   size_t counter;
 };
 
-struct count_sort_data count_sort(const uint64_t* data,
-                                  size_t len);
+struct count_sort_data count_sort(const uint64_t* data, size_t len);
 
 uint64_t pc64(char* bytes);
 void up64(uint64_t value, char* dst);

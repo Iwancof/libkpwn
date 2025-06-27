@@ -18,9 +18,9 @@ void set_logfile(FILE* file);
 
 typedef void logf_t(const char* fmt, ...);
 
-#define DEFINE_LOG_FUNC(func)                      \
-  void f_##func(FILE* dest, const char* fmt, ...); \
-  void func(const char* fmt, ...);
+#define DEFINE_LOG_FUNC(func)                                                            \
+  void f_##func(FILE* dest, const char* fmt, ...) __attribute__((format(printf, 2, 3))); \
+  void func(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 DEFINE_LOG_FUNC(log_debug);
 DEFINE_LOG_FUNC(log_info);
