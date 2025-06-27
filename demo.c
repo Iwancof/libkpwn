@@ -14,7 +14,7 @@ size_t call_me(int x, int y) {
 int main(int argc, char* argv[]) {
   noaslr(argc, argv);
 
-  log_level = LOG_INFO;
+  log_level = LOG_DEBUG;
   hexdump_width = 16;
 
   log_info("pwning started");
@@ -25,6 +25,8 @@ int main(int argc, char* argv[]) {
   dmmap(NULL, MAPDEF);
 
   void* ptr = malloc(0x40);
+  malloc(0x0);
+
   REP(i, 0x40) {
     ((uint8_t*)ptr)[i] = i;
   }
