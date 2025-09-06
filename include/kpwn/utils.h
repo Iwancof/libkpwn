@@ -132,4 +132,6 @@ void up16(uint16_t value, char* dst);
 uint8_t pc8(char* bytes);
 void up8(uint8_t value, char* dst);
 
+uint64_t swab64(uint64_t value);
+
 #endif
