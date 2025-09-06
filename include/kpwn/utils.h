@@ -81,17 +81,9 @@
     exit(EXIT_FAILURE);                                                      \
   })
 
-#define ARRAY_SIZE(array)              \
-  ({                                   \
-    __typeof__(array) __arr = (array); \
-    sizeof(__arr) / sizeof(__arr[0]);  \
-  })
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
-#define ARRAY_SIZE_BYTES(array)        \
-  ({                                   \
-    __typeof__(array) __arr = (array); \
-    sizeof(__arr);                     \
-  })
+#define ARRAY_SIZE_BYTES(array) (sizeof(array))
 
 #define ARRAY_END(array) (&(array[ARRAY_SIZE(array)]))
 
