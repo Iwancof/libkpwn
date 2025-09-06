@@ -16,6 +16,8 @@ int main(int argc, char* argv[]) {
 
   log_level = LOG_DEBUG;
   hexdump_width = 16;
+  
+  kchecksec();
 
   log_info("pwning started");
 

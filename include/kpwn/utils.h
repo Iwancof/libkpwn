@@ -2,7 +2,7 @@
 #define _KPWN_UTILS_
 
 #include <errno.h>
-#include <kpwn/logger.h>
+#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -101,7 +101,10 @@
     __a > __b ? __a : __b;   \
   })
 
-void proc_info(logf_t log);
+// generic logger function pointer for proc_info to avoid tight coupling
+typedef void (*logf_ptr_t)(const char* fmt, ...);
+
+void proc_info(logf_ptr_t log);
 
 extern const char root_without_password[];
 
@@ -125,5 +128,18 @@ uint8_t pc8(char* bytes);
 void up8(uint8_t value, char* dst);
 
 uint64_t swab64(uint64_t value);
+
+// generic helpers
+char* str_dup_or_null(const char* s);
+void trim_trailing_newlines(char* s);
+char* slurp_file(const char* path, size_t max_bytes);
+int slurp_int_file(const char* path, int na_value);
+int file_is_readable(const char* path);
+int file_exists(const char* path);
+char* popen_read(const char* cmd, size_t max_bytes);
+int command_exists(const char* cmd);
+char* read_first_n_lines(const char* text, size_t max_lines);
+char* read_status_key_line(const char* path, const char* key_prefix);
+int contains_token_case_insensitive(const char* haystack, const char* needle);
 
 #endif
