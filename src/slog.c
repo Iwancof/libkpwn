@@ -5,14 +5,17 @@
 #include <kpwn/utils.h>
 #include <sys/mman.h>
 
-void *lgmmap(logf_t log, void *addr, size_t len, int prot, int flags, int fildes, off_t off) {
+void *lgmmap(logf_t log, void *addr, size_t len, int prot, int flags,
+             int fildes, off_t off) {
   void *ret = mmap(addr, len, prot, flags, fildes, off);
-  log("mmap(%p, 0x%#lx, %x, %x, %d, 0x%#lx) = %p", addr, len, prot, flags, fildes, off, ret);
+  log("mmap(%p, 0x%#lx, %x, %x, %d, 0x%#lx) = %p", addr, len, prot, flags,
+      fildes, off, ret);
 
   return ret;
 }
 
-void *dmmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off) {
+void *dmmap(void *addr, size_t len, int prot, int flags, int fildes,
+            off_t off) {
   return SYSCHK(lgmmap(log_debug, addr, len, prot, flags, fildes, off));
 }
 

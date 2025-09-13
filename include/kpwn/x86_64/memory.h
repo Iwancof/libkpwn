@@ -13,17 +13,15 @@ typedef union {
     unsigned long pgd : 9;
     unsigned long padding : 16;
   };
-  void* ptr;
+  void *ptr;
 } pgaddr;
 
 extern const pgaddr pg_null;
 
-pgaddr from_pti(unsigned long pgd, unsigned long pud,
-                unsigned long pmd, unsigned long pte,
-                unsigned long byte);
-void* pti_mmap(logf_t log, unsigned long pgd,
-               unsigned long pud, unsigned long pmd,
-               unsigned long pte, size_t len, int prot,
+pgaddr from_pti(unsigned long pgd, unsigned long pud, unsigned long pmd,
+                unsigned long pte, unsigned long byte);
+void *pti_mmap(logf_t log, unsigned long pgd, unsigned long pud,
+               unsigned long pmd, unsigned long pte, size_t len, int prot,
                int flags, int fildes, off_t off);
 
 size_t phy_to_pte(size_t phys);

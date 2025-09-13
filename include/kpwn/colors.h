@@ -1,4 +1,2 @@
 
-#define DEF(name, esc) \
-
-
+#define DEF(name, esc)

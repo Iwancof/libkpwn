@@ -5,10 +5,10 @@
 
 Test(pc64_roundtrip, test) {
   uint64_t values[] = {
-    0ULL,
-    1ULL,
-    0x0123456789ABCDEFULL,
-    UINT64_MAX,
+      0ULL,
+      1ULL,
+      0x0123456789ABCDEFULL,
+      UINT64_MAX,
   };
 
   for (size_t i = 0; i < ARRAY_SIZE(values); i++) {
@@ -21,10 +21,10 @@ Test(pc64_roundtrip, test) {
 
 Test(pc32_roundtrip, test) {
   uint32_t values[] = {
-    0U,
-    1U,
-    0x89ABCDEFU,
-    UINT32_MAX,
+      0U,
+      1U,
+      0x89ABCDEFU,
+      UINT32_MAX,
   };
 
   for (size_t i = 0; i < ARRAY_SIZE(values); i++) {
@@ -37,10 +37,10 @@ Test(pc32_roundtrip, test) {
 
 Test(pc16_roundtrip, test) {
   uint16_t values[] = {
-    0,
-    1,
-    0xBEEFu,
-    UINT16_MAX,
+      0,
+      1,
+      0xBEEFu,
+      UINT16_MAX,
   };
 
   for (size_t i = 0; i < ARRAY_SIZE(values); i++) {
@@ -53,10 +53,10 @@ Test(pc16_roundtrip, test) {
 
 Test(pc8_roundtrip, test) {
   uint8_t values[] = {
-    0,
-    1,
-    0xAB,
-    UINT8_MAX,
+      0,
+      1,
+      0xAB,
+      UINT8_MAX,
   };
 
   for (size_t i = 0; i < ARRAY_SIZE(values); i++) {
@@ -66,4 +66,3 @@ Test(pc8_roundtrip, test) {
     cr_assert(out == values[i]);
   }
 }
-

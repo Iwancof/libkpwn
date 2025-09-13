@@ -12,7 +12,6 @@ struct cpu_state {
 };
 
 struct cpu_state cpu_now();
-void print_cpu_state(logf_t log,
-                     const struct cpu_state* state);
+void print_cpu_state(logf_t log, const struct cpu_state *state);
 
 #endif

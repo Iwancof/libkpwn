@@ -11,27 +11,25 @@ size_t call_me(int x, int y) {
   return 0xdead;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   noaslr(argc, argv);
 
   log_level = LOG_DEBUG;
   hexdump_width = 16;
-  
+
   kchecksec();
 
   log_info("pwning started");
 
   uint64_t kbase = kasld();
-  set_kbase((void*)kbase);
+  set_kbase((void *)kbase);
 
   dmmap(NULL, MAPDEF);
 
-  void* ptr = malloc(0x40);
+  void *ptr = malloc(0x40);
   malloc(0x0);
 
-  REP(i, 0x40) {
-    ((uint8_t*)ptr)[i] = i;
-  }
+  REP(i, 0x40) { ((uint8_t *)ptr)[i] = i; }
 
   free(ptr);
   hexdump(log_info, ptr, 0x40);
@@ -44,7 +42,7 @@ int main(int argc, char* argv[]) {
   size_t x = kfunc_abs(call_me, 2, 1, 2);
   printf("ret = 0x%lx\n", x);
 
-  char* payload = calloc(1, 0x20);
+  char *payload = calloc(1, 0x20);
   up64(0xdeadbeefcafebabe, &payload[0]);
   up64(0x1122334444332211, &payload[8]);
   up32(0xffffffff, &payload[16]);

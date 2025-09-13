@@ -59,8 +59,8 @@ void interactive() {
   }
 }
 
-#define UNUSED_ARG \
-  (void)argc;      \
+#define UNUSED_ARG                                                             \
+  (void)argc;                                                                  \
   (void)argv;
 
 void cmd_help(int argc, char *argv[]) {
@@ -112,18 +112,18 @@ void cmd_write_memory(int argc, char *argv[]) {
   }
 
   switch (size) {
-    case 1:
-      *(uint8_t *)addr = (uint8_t)value;
-      break;
-    case 2:
-      *(uint16_t *)addr = (uint16_t)value;
-      break;
-    case 4:
-      *(uint32_t *)addr = (uint32_t)value;
-      break;
-    case 8:
-      *(uint64_t *)addr = (uint64_t)value;
-      break;
+  case 1:
+    *(uint8_t *)addr = (uint8_t)value;
+    break;
+  case 2:
+    *(uint16_t *)addr = (uint16_t)value;
+    break;
+  case 4:
+    *(uint32_t *)addr = (uint32_t)value;
+    break;
+  case 8:
+    *(uint64_t *)addr = (uint64_t)value;
+    break;
   }
 
   log_info("Wrote value %llx to %p", value, addr);
@@ -147,18 +147,18 @@ void cmd_read_memory(int argc, char *argv[]) {
   log_info("Reading %zu bytes from %p", size, addr);
 
   switch (size) {
-    case 1:
-      log_info("Value at %p: %hhx", addr, *(uint8_t *)addr);
-      break;
-    case 2:
-      log_info("Value at %p: %hx", addr, *(uint16_t *)addr);
-      break;
-    case 4:
-      log_info("Value at %p: %x", addr, *(uint32_t *)addr);
-      break;
-    case 8:
-      log_info("Value at %p: %lx", addr, *(uint64_t *)addr);
-      break;
+  case 1:
+    log_info("Value at %p: %hhx", addr, *(uint8_t *)addr);
+    break;
+  case 2:
+    log_info("Value at %p: %hx", addr, *(uint16_t *)addr);
+    break;
+  case 4:
+    log_info("Value at %p: %x", addr, *(uint32_t *)addr);
+    break;
+  case 8:
+    log_info("Value at %p: %lx", addr, *(uint64_t *)addr);
+    break;
   }
 }
 
@@ -189,7 +189,7 @@ void cmd_telescope(int argc, char *argv[]) {
   }
 
   void *addr = (void *)strtoull(argv[1], NULL, 0);
-  size_t num = 10;  // default to 10 if not specified
+  size_t num = 10; // default to 10 if not specified
   if (argc > 2) {
     num = strtoull(argv[2], NULL, 0);
   }

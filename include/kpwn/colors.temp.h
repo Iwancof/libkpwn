@@ -8,7 +8,7 @@
 // #define MAG "\e[0;35m"
 // #define CYN "\e[0;36m"
 // #define WHT "\e[0;37m"
-// 
+//
 // //Regular bold text
 // #define BBLK "\e[1;30m"
 // #define BRED "\e[1;31m"
@@ -18,7 +18,7 @@
 // #define BMAG "\e[1;35m"
 // #define BCYN "\e[1;36m"
 // #define BWHT "\e[1;37m"
-// 
+//
 // //Regular underline text
 // #define UBLK "\e[4;30m"
 // #define URED "\e[4;31m"
@@ -28,7 +28,7 @@
 // #define UMAG "\e[4;35m"
 // #define UCYN "\e[4;36m"
 // #define UWHT "\e[4;37m"
-// 
+//
 // //Regular background
 // #define BLKB "\e[40m"
 // #define REDB "\e[41m"
@@ -38,8 +38,8 @@
 // #define MAGB "\e[45m"
 // #define CYNB "\e[46m"
 // #define WHTB "\e[47m"
-// 
-// //High intensty background 
+//
+// //High intensty background
 // #define BLKHB "\e[0;100m"
 // #define REDHB "\e[0;101m"
 // #define GRNHB "\e[0;102m"
@@ -48,7 +48,7 @@
 // #define MAGHB "\e[0;105m"
 // #define CYNHB "\e[0;106m"
 // #define WHTHB "\e[0;107m"
-// 
+//
 // //High intensty text
 // #define HBLK "\e[0;90m"
 // #define HRED "\e[0;91m"
@@ -58,7 +58,7 @@
 // #define HMAG "\e[0;95m"
 // #define HCYN "\e[0;96m"
 // #define HWHT "\e[0;97m"
-// 
+//
 // //Bold high intensity text
 // #define BHBLK "\e[1;90m"
 // #define BHRED "\e[1;91m"
@@ -68,7 +68,7 @@
 // #define BHMAG "\e[1;95m"
 // #define BHCYN "\e[1;96m"
 // #define BHWHT "\e[1;97m"
-// 
+//
 // //Reset
 // #define reset "\e[0m"
 // #define CRESET "\e[0m"

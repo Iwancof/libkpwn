@@ -7,7 +7,6 @@ typedef struct {
   uint64_t lo, hi;
 } pauth_key;
 
-uint64_t pauth_addpac(uint64_t ptr, uint64_t modifier,
-                      pauth_key key);
+uint64_t pauth_addpac(uint64_t ptr, uint64_t modifier, pauth_key key);
 
 #endif

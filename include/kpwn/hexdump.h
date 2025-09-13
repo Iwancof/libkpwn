@@ -6,5 +6,5 @@
 
 extern size_t hexdump_width;
 
-void hexdump(logf_t log, void* content, size_t len);
+void hexdump(logf_t log, void *content, size_t len);
 #endif

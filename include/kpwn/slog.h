@@ -11,16 +11,14 @@
 // lg.* `log` system call wrapper. output specified log.
 // without result.
 
-void* lgmmap(logf_t log, void* addr, size_t len, int prot,
-             int flags, int fildes, off_t off);
-void* dmmap(void* addr, size_t len, int prot, int flags,
-            int fildes, off_t off);
+void *lgmmap(logf_t log, void *addr, size_t len, int prot, int flags,
+             int fildes, off_t off);
+void *dmmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
 
-int lgmunmap(logf_t log, void* addr, size_t len);
-int dunmap(void* addr, size_t len);
+int lgmunmap(logf_t log, void *addr, size_t len);
+int dunmap(void *addr, size_t len);
 
-void* lgmremap(logf_t log, void* addr, size_t old,
-               size_t new, int flags);
-void* dremap(void* addr, size_t old, size_t new, int flags);
+void *lgmremap(logf_t log, void *addr, size_t old, size_t new, int flags);
+void *dremap(void *addr, size_t old, size_t new, int flags);
 
 #endif
