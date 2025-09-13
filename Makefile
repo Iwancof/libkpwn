@@ -1,6 +1,6 @@
 LIBKPWN	:= /home/iwancof/WorkSpace/CTF/libkpwn
 
-CC       := musl-gcc
+CC       := gcc
 CFLAGS   := -O0 -ggdb3 -Wall -Wextra
 
 ARCH := $(word 1,$(subst -, ,$(shell $(CC) -dumpmachine)))

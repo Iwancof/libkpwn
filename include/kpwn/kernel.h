@@ -39,6 +39,8 @@ struct kchecksec_t {
 struct kchecksec_t inspect();
 struct kchecksec_t kchecksec();
 
+int alloc_n_creds(int nr_creds);
+
 extern void *kbase;
 
 void set_kbase(void *addr);

@@ -50,5 +50,7 @@ int main(int argc, char *argv[]) {
 
   hexdump(log_info, payload, 0x20);
 
+  alloc_n_creds(0x100);
+
   interactive();
 }

