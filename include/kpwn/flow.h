@@ -2,6 +2,7 @@
 #define _KPWN_FLOW_
 
 #include <kpwn/logger.h>
+#include <pthread.h>
 #include <stddef.h>
 
 #define LPE_BILLY                                                              \
@@ -15,6 +16,8 @@ __attribute__((naked, noreturn)) void win();
 
 void process_assign_to_core(int core_id);
 void thread_assign_to_core(int core_id);
+
+pthread_t grazing(void (*f)());
 
 void trigger_corewin(const char *backdoor_file, const char *backdoor_cmd);
 void set_process_name(char *);

