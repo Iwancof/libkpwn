@@ -3,6 +3,7 @@
 
 #include <kpwn/logger.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/mman.h>
 
@@ -21,5 +22,7 @@
                  -1, 0)
 
 void vmmap(logf_t log);
+
+uint64_t virt2phys(void *addr);
 
 #endif
