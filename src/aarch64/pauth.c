@@ -1,6 +1,6 @@
 #include <kpwn/aarch64/pauth.h>
-#include <kpwn/utils.h>
 #include <kpwn/logger.h>
+#include <kpwn/utils.h>
 #include <stdint.h>
 
 #define MAKE_64BIT_MASK(shift, length) (((~0ULL) >> (64 - (length))) << (shift))

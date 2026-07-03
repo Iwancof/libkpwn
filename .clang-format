@@ -1,0 +1,3 @@
+# libkpwn follows LLVM style (2-space indent, 80 columns) — matches the existing
+# clang-formatted sources. Run `make format` to apply, `make format-check` to verify.
+BasedOnStyle: LLVM
