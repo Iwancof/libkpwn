@@ -1,0 +1,1 @@
+savedcmd_vuln.ko := ld -r -m elf_x86_64 -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T /usr/lib/modules/7.0.12-arch1-1/build/scripts/module.lds -o vuln.ko vuln.o vuln.mod.o .module-common.o
