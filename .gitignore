@@ -1,6 +1,7 @@
 # build outputs
 demo
 run_test
+smoke_spray
 libkpwn.a
 build/
 *.o
