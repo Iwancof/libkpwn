@@ -1,9 +1,9 @@
-#include <criterion/criterion.h>
+#include "ktest.h"
 #include <kpwn/utils.h>
 
-// Tests of pack/unpack utils
+// Tests of pack/unpack utils (up*/pc* round-trips).
 
-Test(pc64_roundtrip, test) {
+KTEST(pack, pc64_roundtrip) {
   uint64_t values[] = {
       0ULL,
       1ULL,
@@ -15,11 +15,11 @@ Test(pc64_roundtrip, test) {
     char buf[sizeof(uint64_t)] = {0};
     up64(values[i], buf);
     uint64_t out = pc64(buf);
-    cr_assert(out == values[i]);
+    KT_ASSERT_EQ(out, values[i]);
   }
 }
 
-Test(pc32_roundtrip, test) {
+KTEST(pack, pc32_roundtrip) {
   uint32_t values[] = {
       0U,
       1U,
@@ -31,11 +31,11 @@ Test(pc32_roundtrip, test) {
     char buf[sizeof(uint32_t)] = {0};
     up32(values[i], buf);
     uint32_t out = pc32(buf);
-    cr_assert(out == values[i]);
+    KT_ASSERT_EQ(out, values[i]);
   }
 }
 
-Test(pc16_roundtrip, test) {
+KTEST(pack, pc16_roundtrip) {
   uint16_t values[] = {
       0,
       1,
@@ -47,11 +47,11 @@ Test(pc16_roundtrip, test) {
     char buf[sizeof(uint16_t)] = {0};
     up16(values[i], buf);
     uint16_t out = pc16(buf);
-    cr_assert(out == values[i]);
+    KT_ASSERT_EQ(out, values[i]);
   }
 }
 
-Test(pc8_roundtrip, test) {
+KTEST(pack, pc8_roundtrip) {
   uint8_t values[] = {
       0,
       1,
@@ -63,6 +63,6 @@ Test(pc8_roundtrip, test) {
     char buf[sizeof(uint8_t)] = {0};
     up8(values[i], buf);
     uint8_t out = pc8(buf);
-    cr_assert(out == values[i]);
+    KT_ASSERT_EQ(out, values[i]);
   }
 }

@@ -1,9 +1,9 @@
-#include <criterion/criterion.h>
+#include "ktest.h"
 #include <kpwn/utils.h>
 
-// Tests of swab64 utility
+// Tests of the swab64 byte-swap utility.
 
-Test(swab64_known_values, test) {
+KTEST(swab, known_values) {
   struct {
     uint64_t in;
     uint64_t out;
@@ -15,17 +15,17 @@ Test(swab64_known_values, test) {
   };
 
   for (size_t i = 0; i < ARRAY_SIZE(cases); i++) {
-    cr_assert_eq(swab64(cases[i].in), cases[i].out);
+    KT_ASSERT_EQ(swab64(cases[i].in), cases[i].out);
   }
 }
 
-Test(swab64_involution, test) {
+KTEST(swab, involution) {
   uint64_t values[] = {
       0ULL, 1ULL, 0x0123456789ABCDEFULL, 0xFEDCBA9876543210ULL, UINT64_MAX,
   };
 
   for (size_t i = 0; i < ARRAY_SIZE(values); i++) {
     uint64_t x = values[i];
-    cr_assert_eq(swab64(swab64(x)), x);
+    KT_ASSERT_EQ(swab64(swab64(x)), x);
   }
 }
