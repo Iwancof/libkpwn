@@ -33,4 +33,13 @@ DEFINE_LOG_FUNC(log_null);
 
 #undef DEFINE_LOG_FUNC
 
+// LLM-friendly output macros — machine-parseable with grep '[kpwn:leak]' etc.
+
+#define KPWN_LEAK(name, val)                                                   \
+  log_success("[kpwn:leak] %s=0x%lx", (name), (unsigned long)(val))
+
+#define KPWN_DUMP(expr)                                                        \
+  log_info("[kpwn:dump] " __FILE__ ":%d %s = 0x%lx (%ld)", __LINE__, #expr,    \
+           (unsigned long)(expr), (long)(expr))
+
 #endif
