@@ -46,7 +46,8 @@ void thread_assign_to_core(int core_id) {
 pthread_t grazing(void (*f)()) {
   pthread_t thread;
 
-  pthread_create(&thread, NULL, (void *(*)(void *))f, NULL);
+  int ret = pthread_create(&thread, NULL, (void *(*)(void *))f, NULL);
+  ASSERT_MSG(ret == 0, "pthread_create failed");
 
   return thread;
 }

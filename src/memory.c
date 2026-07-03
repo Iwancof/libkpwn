@@ -11,21 +11,30 @@
 void vmmap(logf_t log) {
   int maps = SYSCHK(open("/proc/self/maps", O_RDONLY));
 
-  char line[0x100];
-  for (int pos = 0; read(maps, &line[pos], 1); pos++) {
-    if (line[pos] == '\n') {
-      log("[vmmap] %.*s", pos, line);
-      pos = -1;
-    }
-  }
-
+  char buf[0x4000];
+  ssize_t n = read(maps, buf, sizeof(buf) - 1);
   close(maps);
+
+  if (n <= 0)
+    return;
+  buf[n] = '\0';
+
+  char *p = buf;
+  while (*p) {
+    char *nl = strchr(p, '\n');
+    if (nl)
+      *nl = '\0';
+    log("[vmmap] %s", p);
+    if (!nl)
+      break;
+    p = nl + 1;
+  }
 }
 
 uint64_t virt2phys(void *addr) {
   static int fd = -1;
 
-  if (fd == -1) {
+  if (fd < 0) {
     fd = SYSCHK(open("/proc/self/pagemap", O_RDONLY));
   }
 
@@ -37,16 +46,12 @@ uint64_t virt2phys(void *addr) {
   uint64_t entry;
   SYSCHK(read(fd, &entry, sizeof(entry)));
 
-  // Check if page is present (bit 63)
   if (!(entry & (1ULL << 63))) {
     log_warn("virt2phys: page not present for address %p", addr);
-    return 0;
+    return (uint64_t)-1;
   }
 
-  // Extract PFN (bits 0-54)
   uint64_t pfn = entry & ((1ULL << 55) - 1);
-
-  // Calculate physical address: PFN * PAGE_SIZE + page offset
   uint64_t phy_addr = pfn * PAGE_SIZE + ((uintptr_t)addr & PAGE_MASK);
 
   return phy_addr;
