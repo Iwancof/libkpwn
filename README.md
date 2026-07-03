@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     int qids[256];
     char payload[256 - KPWN_MSG_HDR_SIZE];
     memset(payload, 'A', sizeof(payload));
-    kpwn_spray_msg(qids, 256, payload, sizeof(payload), 0);
+    kpwn_spray_msg(qids, 256, payload, sizeof(payload));
 
     // ... trigger your vulnerability here ...
 
