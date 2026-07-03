@@ -7,12 +7,15 @@
 // modules are selected at compile time via the target triple.
 
 #include <kpwn/colors.h>
+#include <kpwn/crosscache.h>
 #include <kpwn/flow.h>
 #include <kpwn/hexdump.h>
 #include <kpwn/kernel.h>
 #include <kpwn/logger.h>
 #include <kpwn/memory.h>
+#include <kpwn/overwrite.h>
 #include <kpwn/slog.h>
+#include <kpwn/spray.h>
 #include <kpwn/utils.h>
 
 #if defined(__x86_64__)
