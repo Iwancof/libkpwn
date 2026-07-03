@@ -13,10 +13,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void proc_info(logf_ptr_t log) {
+void proc_info(logf_t log) {
   pid_t pid = getpid();
 
-  // get open fds
   char path[64];
   snprintf(path, sizeof(path), "/proc/%d/fd", pid);
 
@@ -32,7 +31,7 @@ void proc_info(logf_ptr_t log) {
       char target[0x200];
       ssize_t len = readlink(link_path, target, sizeof(target) - 1);
       if (len != -1) {
-        target[len] = '\0'; // null-terminate the string
+        target[len] = '\0';
         log("%s -> %s", entry->d_name, target);
       } else {
         log_error("readlink error for %s: %s", link_path, strerror(errno));
@@ -44,17 +43,14 @@ void proc_info(logf_ptr_t log) {
 
 const char root_without_password[] = "root::0:0:root:/root:/bin/sh";
 
-int compare_count_sort_data(const void *a, const void *b) {
-  const struct count_sort_data *data_a = (const struct count_sort_data *)a;
-  const struct count_sort_data *data_b = (const struct count_sort_data *)b;
-
-  if (data_a->counter < data_b->counter) {
+static int compare_count_sort_data_desc(const void *a, const void *b) {
+  const struct count_sort_data *da = (const struct count_sort_data *)a;
+  const struct count_sort_data *db = (const struct count_sort_data *)b;
+  if (da->counter > db->counter)
     return -1;
-  } else if (data_a->counter > data_b->counter) {
+  if (da->counter < db->counter)
     return 1;
-  } else {
-    return 0;
-  }
+  return 0;
 }
 
 struct count_sort_data count_sort(const uint64_t *data, size_t len) {
@@ -62,90 +58,84 @@ struct count_sort_data count_sort(const uint64_t *data, size_t len) {
     log_error("[count_sort]: empty data array");
     return (struct count_sort_data){0, 0};
   }
-  struct count_sort_data count_data[len];
-  memset(count_data, 0, sizeof(count_data));
+
+  struct count_sort_data *cd = malloc(len * sizeof(*cd));
+  ASSERT(cd != NULL);
+  memset(cd, 0, len * sizeof(*cd));
 
   size_t num_unique = 0;
   for (size_t i = 0; i < len; i++) {
-    for (size_t j = 0; j < num_unique; j++) {
-      if (data[i] == count_data[j].data) {
-        count_data[j].counter++;
-        goto next;
+    size_t j;
+    for (j = 0; j < num_unique; j++) {
+      if (data[i] == cd[j].data) {
+        cd[j].counter++;
+        break;
       }
     }
-    count_data[num_unique].data = data[i];
-    count_data[num_unique].counter = 1;
-    num_unique++;
-  next:
+    if (j == num_unique) {
+      cd[num_unique].data = data[i];
+      cd[num_unique].counter = 1;
+      num_unique++;
+    }
   }
 
-  qsort(count_data, num_unique, sizeof(struct count_sort_data),
-        compare_count_sort_data);
+  qsort(cd, num_unique, sizeof(*cd), compare_count_sort_data_desc);
 
-  if (count_data[0].counter < len / 2) {
+  struct count_sort_data result = cd[0];
+
+  if (result.counter < len / 2) {
     log_warn("[count_sort]: no majority element found");
   }
 
-  return count_data[0];
+  free(cd);
+  return result;
 }
 
 uint64_t pc64(char *bytes) {
   uint64_t ret;
   ASSERT_MSG(bytes != NULL, "bytes is NULL");
-
   memcpy(&ret, bytes, sizeof(uint64_t));
-
   return ret;
 }
 
 void up64(uint64_t value, char *dst) {
   ASSERT_MSG(dst != NULL, "dst is NULL");
-
   memcpy(dst, &value, sizeof(uint64_t));
 }
 
 uint32_t pc32(char *bytes) {
   uint32_t ret;
   ASSERT_MSG(bytes != NULL, "bytes is NULL");
-
   memcpy(&ret, bytes, sizeof(uint32_t));
-
   return ret;
 }
 
 void up32(uint32_t value, char *dst) {
   ASSERT_MSG(dst != NULL, "dst is NULL");
-
   memcpy(dst, &value, sizeof(uint32_t));
 }
 
 uint16_t pc16(char *bytes) {
   uint16_t ret;
   ASSERT_MSG(bytes != NULL, "bytes is NULL");
-
   memcpy(&ret, bytes, sizeof(uint16_t));
-
   return ret;
 }
 
 void up16(uint16_t value, char *dst) {
   ASSERT_MSG(dst != NULL, "dst is NULL");
-
   memcpy(dst, &value, sizeof(uint16_t));
 }
 
 uint8_t pc8(char *bytes) {
   uint8_t ret;
   ASSERT_MSG(bytes != NULL, "bytes is NULL");
-
   memcpy(&ret, bytes, sizeof(uint8_t));
-
   return ret;
 }
 
 void up8(uint8_t value, char *dst) {
   ASSERT_MSG(dst != NULL, "dst is NULL");
-
   memcpy(dst, &value, sizeof(uint8_t));
 }
 
@@ -296,8 +286,8 @@ char can_kern_write_path_default[] = "/tmp/can_kern_write";
 char *can_kern_write_file = can_kern_write_path_default;
 
 int can_kern_write(void *addr) {
-  static int fd = 0;
-  if (!fd) {
+  static int fd = -1;
+  if (fd < 0) {
     fd = SYSCHK(open(can_kern_write_file, O_CREAT | O_RDWR, 0666));
     SYSCHK(write(fd, addr, 1));
   }

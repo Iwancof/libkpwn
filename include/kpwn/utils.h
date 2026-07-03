@@ -2,6 +2,7 @@
 #define _KPWN_UTILS_
 
 #include <errno.h>
+#include <kpwn/logger.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -20,7 +21,8 @@
 
 #define __KPWN_REP_IMPL(idx_ident, start, end, step, direc)                    \
   for (ptrdiff_t idx_ident = __DIREC_HELPER((direc), (start), (end) - 1);      \
-       __DIREC_HELPER((direc), idx_ident < (end), (start) <= idx_ident);       \
+       __DIREC_HELPER((direc), idx_ident < (ptrdiff_t)(end),                   \
+                      (ptrdiff_t)(start) <= idx_ident);                        \
        idx_ident += (step) * __DIREC_HELPER(direc, 1, -1))
 
 #define __KPWN_REP_ARG_5(idx, start, end, step, direc)                         \
@@ -42,23 +44,18 @@
 // REP(i, start, end): for i in (start..end)
 // REP(i, start, end, step): for i in (start..end by step)
 // REP(i, start, end, step, direc): direc(forward, backward)
-// --> for i in (start..end by step) or for i in (end..start
-// by step)
 
 #define REP(...)                                                               \
   __KPWN_REP_ARG_RESOLVER(__VA_ARGS__, __KPWN_REP_ARG_5, __KPWN_REP_ARG_4,     \
                           __KPWN_REP_ARG_3, __KPWN_REP_ARG_2,                  \
-                          __KPWN_REP_ARG_1)(__VA_ARGS__)
-
-#define WAIT                                                                   \
-  printf("waiting at %d. Press Enter to continue\n", __LINE__);                \
-  getc(stdin);
+                          __KPWN_REP_ARG_1)                                    \
+  (__VA_ARGS__)
 
 #define SYSCHK(eval)                                                           \
   ({                                                                           \
     typeof(eval) __ret = (eval);                                               \
-    if (__ret < 0 || __ret == 0xffffffff || __ret == 0xffffffffffffffff) {     \
-      log_error("SYSCHK error at " __FILE__ ":%d %s = %s\n", __LINE__, #eval,  \
+    if (__ret < 0) {                                                           \
+      log_error("SYSCHK error at " __FILE__ ":%d %s = %s", __LINE__, #eval,    \
                 strerror(errno));                                              \
       exit(EXIT_FAILURE);                                                      \
     }                                                                          \
@@ -68,10 +65,21 @@
 #define SYSCHK_BAIL(eval)                                                      \
   ({                                                                           \
     typeof(eval) __ret = (eval);                                               \
-    if (__ret < 0 || __ret == 0xffffffff || __ret == 0xffffffffffffffff) {     \
-      log_error("SYSCHK error at " __FILE__ ":%d %s = %s\n", __LINE__, #eval,  \
+    if (__ret < 0) {                                                           \
+      log_error("SYSCHK error at " __FILE__ ":%d %s = %s", __LINE__, #eval,    \
                 strerror(errno));                                              \
       return __ret;                                                            \
+    }                                                                          \
+    __ret;                                                                     \
+  })
+
+#define PTRCHK(eval)                                                           \
+  ({                                                                           \
+    typeof(eval) __ret = (eval);                                               \
+    if (__ret == (typeof(eval))-1 || __ret == NULL) {                          \
+      log_error("PTRCHK error at " __FILE__ ":%d %s = %s", __LINE__, #eval,    \
+                strerror(errno));                                              \
+      exit(EXIT_FAILURE);                                                      \
     }                                                                          \
     __ret;                                                                     \
   })
@@ -79,7 +87,7 @@
 #define ASSERT(cond)                                                           \
   ({                                                                           \
     if (!(cond)) {                                                             \
-      log_error("ASSERT error at " __FILE__ ":%d %s\n", __LINE__, #cond);      \
+      log_error("ASSERT error at " __FILE__ ":%d %s", __LINE__, #cond);        \
       exit(EXIT_FAILURE);                                                      \
     }                                                                          \
   })
@@ -87,7 +95,7 @@
 #define ASSERT_MSG(cond, msg)                                                  \
   ({                                                                           \
     if (!(cond)) {                                                             \
-      log_error("ASSERT error at " __FILE__ ":%d %s: %s\n", __LINE__, #cond,   \
+      log_error("ASSERT error at " __FILE__ ":%d %s: %s", __LINE__, #cond,     \
                 msg);                                                          \
       exit(EXIT_FAILURE);                                                      \
     }                                                                          \
@@ -95,7 +103,7 @@
 
 #define DIE(msg)                                                               \
   ({                                                                           \
-    log_error("DIE error at " __FILE__ ":%d %s: %s\n", __LINE__, #msg, msg);   \
+    log_error("DIE error at " __FILE__ ":%d %s: %s", __LINE__, #msg, msg);     \
     exit(EXIT_FAILURE);                                                        \
   })
 
@@ -119,10 +127,7 @@
     __a > __b ? __a : __b;                                                     \
   })
 
-// generic logger function pointer for proc_info to avoid tight coupling
-typedef void (*logf_ptr_t)(const char *fmt, ...);
-
-void proc_info(logf_ptr_t log);
+void proc_info(logf_t log);
 
 extern const char root_without_password[];
 
@@ -147,7 +152,6 @@ void up8(uint8_t value, char *dst);
 
 uint64_t swab64(uint64_t value);
 
-// generic helpers
 char *str_dup_or_null(const char *s);
 void trim_trailing_newlines(char *s);
 char *slurp_file(const char *path, size_t max_bytes);
