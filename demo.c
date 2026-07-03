@@ -1,13 +1,12 @@
 #define _GNU_SOURCE
 
-#include <kpwn/prelude.h>
+#include <kpwn/kpwn.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 size_t call_me(int x, int y) {
   printf("x = %d, y = %d\n", x, y);
-
   return 0xdead;
 }
 
@@ -21,8 +20,8 @@ int main(int argc, char *argv[]) {
 
   log_info("pwning started");
 
-  uint64_t kbase = kasld();
-  set_kbase((void *)kbase);
+  uint64_t kb = kasld();
+  set_kbase((void *)kb);
 
   dmmap(NULL, MAPDEF);
 
@@ -33,9 +32,6 @@ int main(int argc, char *argv[]) {
 
   free(ptr);
   hexdump(log_info, ptr, 0x40);
-
-  // struct cpu_state state = cpu_now();
-  // print_cpu_state(log_info, &state);
 
   vmmap(log_info);
 
@@ -51,6 +47,4 @@ int main(int argc, char *argv[]) {
   hexdump(log_info, payload, 0x20);
 
   alloc_n_creds(0x100);
-
-  interactive();
 }
