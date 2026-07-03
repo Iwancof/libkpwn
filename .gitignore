@@ -1,2 +1,24 @@
-run_test
+# build outputs
 demo
+run_test
+libkpwn.a
+build/
+*.o
+*.a
+
+# template / exploit build outputs
+template/main
+template/cpmain
+main
+cpmain
+
+# generated offsets
+offsets.h
+
+# VM test scratch
+tests/vm/*.img
+tests/vm/*.cpio.gz
+tests/vm/rootfs/
+
+# Claude Code / agent session logs
+sessions/
