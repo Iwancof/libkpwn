@@ -1,15 +1,10 @@
+#include <kpwn/colors.h>
 #include <kpwn/logger.h>
 #include <stdarg.h>
 #include <stdio.h>
 
-int log_level = LOG_ERROR;
+int log_level = LOG_INFO;
 FILE *default_logfile;
-
-#define LOG_COLOR_RESET "\033[0m"
-#define LOG_COLOR_RED "\033[31m"
-#define LOG_COLOR_YELLOW "\033[33m"
-#define LOG_COLOR_BLUE "\033[34m"
-#define LOG_COLOR_GREEN "\033[32m"
 
 __attribute__((constructor)) void log_init() { default_logfile = stdout; }
 
@@ -18,15 +13,15 @@ void set_logfile(FILE *file) { default_logfile = file; }
 static const char *log_prefix(int level) {
   switch (level) {
   case LOG_DEBUG:
-    return "[ " LOG_COLOR_RED "DEBG" LOG_COLOR_RESET " ]";
+    return "[ " KPWN_COLOR_DIM "DEBG" KPWN_COLOR_RESET " ]";
   case LOG_INFO:
-    return "[ " LOG_COLOR_BLUE "INFO" LOG_COLOR_RESET " ]";
+    return "[ " KPWN_COLOR_BLUE "INFO" KPWN_COLOR_RESET " ]";
   case LOG_WARN:
-    return "[ " LOG_COLOR_YELLOW "WARN" LOG_COLOR_RESET " ]";
+    return "[ " KPWN_COLOR_YELLOW "WARN" KPWN_COLOR_RESET " ]";
   case LOG_ERROR:
-    return "[ " LOG_COLOR_RED "ERRO" LOG_COLOR_RESET " ]";
+    return "[ " KPWN_COLOR_RED "ERRO" KPWN_COLOR_RESET " ]";
   case LOG_SUCCESS:
-    return "[ " LOG_COLOR_GREEN "SUCC" LOG_COLOR_RESET " ]";
+    return "[ " KPWN_COLOR_GREEN "SUCC" KPWN_COLOR_RESET " ]";
   default:
     return "[ UNKN ]";
   }

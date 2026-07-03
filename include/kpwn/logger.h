@@ -8,7 +8,8 @@
 #define LOG_WARN 2
 #define LOG_ERROR 3
 #define LOG_SUCCESS 4
-#define LOG_QUITE 5
+#define LOG_QUIET 5
+#define LOG_QUITE LOG_QUIET /* compat alias for the old typo */
 
 extern int log_level;
 extern FILE *default_logfile;
