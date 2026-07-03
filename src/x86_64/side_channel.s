@@ -19,19 +19,24 @@ cpuinfo_str: // (char* dst[.13])
 .global measure_prefetch
 .type measure_prefetch, @function
 measure_prefetch: // uint64_t measure_prefetch(void* addr);
-  rdtsc
-  mov r8, rdx
-  shl r8, 32
-  or r8, rax
+    // Serializing timer bracket: mfence;rdtscp ... lfence ... lfence ... rdtscp;mfence
+    mfence
+    rdtscp
+    mov r8, rdx
+    shl r8, 32
+    or  r8, rax
 
-  lfence
-  prefetchnta [rdi]
-  prefetcht2 [rdi]
-  lfence
+    xor rax, rax
+    lfence
+    prefetchnta [rdi]
+    prefetcht2  [rdi]
+    xor rax, rax
+    lfence
 
-  rdtsc
-  shl rdx, 32
-  or rax, rdx
+    rdtscp
+    shl rdx, 32
+    or  rax, rdx
+    sub rax, r8
 
-  sub rax, r8
-  ret
+    mfence
+    ret

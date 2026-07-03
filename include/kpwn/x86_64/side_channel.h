@@ -15,14 +15,20 @@ enum side_channel_arch get_arch();
 
 uint64_t measure_prefetch(void *ptr);
 
-size_t kasld_amd();
-size_t kasld_amd_with_conf(size_t start, size_t end, size_t step,
-                           size_t num_get_kbase, size_t window_size);
+// Multi-strategy KASLR bypass. Tries /proc/kallsyms first, then prefetch
+// side-channel. Returns the kernel text base or 0 on failure.
+size_t kasld(void);
 
-size_t kasld_intel();
+// Individual strategies (called by kasld)
+size_t kasld_proc_kallsyms(void);
+size_t kasld_prefetch(void);
+
+// Legacy API — all delegate to kasld_prefetch()
+size_t kasld_amd(void);
+size_t kasld_amd_with_conf(size_t start, size_t end, size_t step,
+                           size_t num_confirm, size_t window_size);
+size_t kasld_intel(void);
 size_t kasld_intel_with_conf(size_t start, size_t end, size_t step,
                              size_t num_confirm);
 
-size_t kasld();
-
-#endif // _KPWN_ARCH_
+#endif
