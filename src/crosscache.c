@@ -31,7 +31,7 @@ int kpwn_release_pages(void **maps, size_t n_pages) {
 int kpwn_defrag_msg(int *qids, size_t n, size_t obj_size) {
   char *buf = calloc(1, obj_size);
   ASSERT(buf != NULL);
-  int ret = kpwn_spray_msg(qids, n, buf, obj_size, KPWN_MSG_KMALLOC_ANY);
+  int ret = kpwn_spray_msg(qids, n, buf, obj_size);
   free(buf);
   log_debug("[kpwn:crosscache] defrag n=%zu obj_size=%zu", n, obj_size);
   return ret;

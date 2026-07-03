@@ -22,12 +22,7 @@
 #define KPWN_MSG_HDR_SIZE 48
 #define KPWN_MSGSEG_HDR_SIZE 8
 
-// Flags for msg spray target
-#define KPWN_MSG_KMALLOC_ANY 0
-#define KPWN_MSG_KMALLOC_CG 1
-
-int kpwn_spray_msg(int *qids, size_t n, const void *data, size_t data_len,
-                   int flags);
+int kpwn_spray_msg(int *qids, size_t n, const void *data, size_t data_len);
 int kpwn_free_msg(int *qids, size_t n);
 int kpwn_read_msg(int qid, void *buf, size_t buf_len);
 

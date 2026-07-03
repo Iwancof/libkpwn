@@ -28,9 +28,7 @@ struct kpwn_msgbuf {
   char mtext[];
 };
 
-int kpwn_spray_msg(int *qids, size_t n, const void *data, size_t data_len,
-                   int flags) {
-  (void)flags;
+int kpwn_spray_msg(int *qids, size_t n, const void *data, size_t data_len) {
   size_t msg_size = data_len;
 
   for (size_t i = 0; i < n; i++) {
@@ -128,7 +126,7 @@ int kpwn_spray_key(int *keyids, size_t n, const void *data, size_t data_len) {
 
 int kpwn_free_key(int *keyids, size_t n) {
   for (size_t i = 0; i < n; i++)
-    syscall(__NR_keyctl, 0 /* KEYCTL_REVOKE */, keyids[i]);
+    syscall(__NR_keyctl, KEYCTL_REVOKE, keyids[i]);
   log_debug("[kpwn:spray] revoked %zu keys", n);
   return 0;
 }
