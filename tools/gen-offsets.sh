@@ -63,7 +63,7 @@ fi
 
 # Generate offsets header
 echo "Generating offsets header: $OUTPUT_PATH"
-if ! /usr/bin/python3.13 "$PYTHON_HELPER" "$TEMP_ELF" > "$OUTPUT_PATH"; then
+if ! python3 "$PYTHON_HELPER" "$TEMP_ELF" > "$OUTPUT_PATH"; then
     echo "Error: Failed to generate offsets header" >&2
     exit 1
 fi

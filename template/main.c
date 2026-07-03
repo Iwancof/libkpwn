@@ -1,15 +1,17 @@
 #define _GNU_SOURCE
 
-#include <kpwn/prelude.h>
+#include <kpwn/kpwn.h>
 
 int main(int argc, char *argv[]) {
   noaslr(argc, argv);
   log_level = LOG_DEBUG;
-  hexdump_width = 16;
 
-  init_billy();
+  kchecksec();
 
-  log_info("pwning started");
+  uint64_t kb = kasld();
+  set_kbase((void *)kb);
 
-  interactive();
+  log_info("exploit starts here");
+
+  // --- your exploit code below ---
 }
