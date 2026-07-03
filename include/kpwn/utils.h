@@ -160,4 +160,9 @@ char *read_first_n_lines(const char *text, size_t max_lines);
 char *read_status_key_line(const char *path, const char *key_prefix);
 int contains_token_case_insensitive(const char *haystack, const char *needle);
 
+extern char can_kern_write_path_default[];
+extern char *can_kern_write_file;
+
+int can_kern_write(void *addr);
+
 #endif

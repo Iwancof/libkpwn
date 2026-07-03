@@ -3,8 +3,8 @@
 #include <kpwn/kernel.h>
 #include <kpwn/logger.h>
 #include <kpwn/utils.h>
-#include <linux/capability.h>
-#include <linux/io_uring.h>
+// #include <linux/capability.h>
+// #include <linux/io_uring.h>
 #include <stdarg.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -13,6 +13,7 @@
 
 // helpers moved to utils.c
 
+/*
 struct kchecksec_t inspect() {
   struct kchecksec_t check;
   memset(&check, 0, sizeof(check));
@@ -230,6 +231,7 @@ int alloc_n_creds(int nr_creds) {
 
   return ring_fd;
 }
+*/
 
 void *kbase = NULL;
 

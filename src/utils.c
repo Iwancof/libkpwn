@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 
 #include <dirent.h>
+#include <fcntl.h>
 #include <kpwn/logger.h>
 #include <kpwn/utils.h>
 #include <stdint.h>
@@ -289,4 +290,18 @@ int contains_token_case_insensitive(const char *haystack, const char *needle) {
   if (!haystack || !needle)
     return 0;
   return strcasestr(haystack, needle) != NULL;
+}
+
+char can_kern_write_path_default[] = "/tmp/can_kern_write";
+char *can_kern_write_file = can_kern_write_path_default;
+
+int can_kern_write(void *addr) {
+  static int fd = 0;
+  if (!fd) {
+    fd = SYSCHK(open(can_kern_write_file, O_CREAT | O_RDWR, 0666));
+    SYSCHK(write(fd, addr, 1));
+  }
+
+  SYSCHK(lseek(fd, 0, SEEK_SET));
+  return read(fd, addr, 1) == 1;
 }
