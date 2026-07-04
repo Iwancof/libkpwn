@@ -29,15 +29,9 @@ EXPLOIT_SRC="$SCRIPT_DIR/exploit_test.c"
 gcc -static -O0 -ggdb3 -Wall -Wextra \
     -I"$LIBKPWN/include" \
     "$EXPLOIT_SRC" \
-    "$LIBKPWN"/src/crosscache.c "$LIBKPWN"/src/flow.c \
-    "$LIBKPWN"/src/hexdump.c "$LIBKPWN"/src/kernel.c \
-    "$LIBKPWN"/src/logger.c "$LIBKPWN"/src/memory.c \
-    "$LIBKPWN"/src/overwrite.c "$LIBKPWN"/src/slog.c \
-    "$LIBKPWN"/src/spray.c "$LIBKPWN"/src/utils.c \
-    "$LIBKPWN"/src/x86_64/cpu.c "$LIBKPWN"/src/x86_64/memory.c \
-    "$LIBKPWN"/src/x86_64/side_channel.c \
-    "$LIBKPWN"/src/x86_64/side_channel.s \
-    "$LIBKPWN"/src/x86_64/win.s \
+    "$LIBKPWN"/src/*.c \
+    "$LIBKPWN"/src/x86_64/*.c \
+    "$LIBKPWN"/src/x86_64/*.s \
     -o "$ROOTFS/exploit/test" -lpthread
 
 # Init script
