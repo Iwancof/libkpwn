@@ -2,12 +2,10 @@
 #define _KPWN_H_
 
 // kpwn.h — umbrella header for libkpwn.
-//
-// A single `#include <kpwn/kpwn.h>` pulls in everything. The arch-specific
-// modules are selected at compile time via the target triple.
 
 #include <kpwn/colors.h>
 #include <kpwn/crosscache.h>
+#include <kpwn/data_attack.h>
 #include <kpwn/flow.h>
 #include <kpwn/hexdump.h>
 #include <kpwn/kernel.h>
@@ -15,8 +13,12 @@
 #include <kpwn/memory.h>
 #include <kpwn/overwrite.h>
 #include <kpwn/page_primitive.h>
+#include <kpwn/pipe_exploit.h>
+#include <kpwn/race.h>
+#include <kpwn/slab.h>
 #include <kpwn/slog.h>
 #include <kpwn/spray.h>
+#include <kpwn/spray_extra.h>
 #include <kpwn/target.h>
 #include <kpwn/utils.h>
 
