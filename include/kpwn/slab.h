@@ -5,8 +5,8 @@
 
 // SLUB slab-cache introspection for cross-cache attack planning.
 //
-// Before mounting a cross-cache (see kpwn/crosscache.h) you need the geometry of
-// the caches involved: how big each object is, how many objects pack into a
+// Before mounting a cross-cache (see kpwn/crosscache.h) you need the geometry
+// of the caches involved: how big each object is, how many objects pack into a
 // slab, and what page order a slab spans. That tells you how many objects to
 // spray to fill a page, and which victim/target caches share a slab order (a
 // prerequisite for a freed page to be reusable across caches).
