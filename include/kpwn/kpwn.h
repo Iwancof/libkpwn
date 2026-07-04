@@ -14,8 +14,10 @@
 #include <kpwn/logger.h>
 #include <kpwn/memory.h>
 #include <kpwn/overwrite.h>
+#include <kpwn/page_primitive.h>
 #include <kpwn/slog.h>
 #include <kpwn/spray.h>
+#include <kpwn/target.h>
 #include <kpwn/utils.h>
 
 #if defined(__x86_64__)
