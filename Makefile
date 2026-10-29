@@ -22,7 +22,8 @@ LIB_HEADERS := $(wildcard include/kpwn/*.h include/kpwn/$(KPWN_ARCH)/*.h \
 
 TEST_SRCS := $(KPWN_SRCS) $(filter-out tests/smoke_%.c,$(wildcard tests/*.c))
 
-FORMAT_FILES := $(shell find src include tests template demo.c -name '*.c' -o -name '*.h' 2>/dev/null)
+# Kernel-generated module metadata is not maintained source.
+FORMAT_FILES := $(filter-out %.mod.c,$(shell find src include tests template demo.c -name '*.c' -o -name '*.h' 2>/dev/null))
 
 .PHONY: all lib test smoke format format-check clean
 all: lib test
