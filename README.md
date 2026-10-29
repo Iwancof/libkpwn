@@ -15,8 +15,10 @@ int main(int argc, char *argv[]) {
     // Survey the target kernel
     kchecksec();
 
-    // Break KASLR (prefetch side-channel; AMD/Intel auto-detected)
+    // Find the kernel base (kallsyms first, then AMD/Intel prefetch)
     uint64_t kb = kasld();
+    if (!kb)
+        return 1;
     set_kbase((void *)kb);
 
     // Spray msg_msg objects into kmalloc-256
@@ -30,6 +32,14 @@ int main(int argc, char *argv[]) {
     kpwn_free_msg(qids, 256);
 }
 ```
+
+`kasld_prefetch()` requires RDTSCP, readable `/proc/cpuinfo` flags and KPTI
+disabled. It returns 0 when unsupported or when the timing profile has no
+confirmed candidate or has a detectable but ambiguous leading edge. The calling
+thread's CPU affinity is restored after the scan. On AMD, a failed single-prefetch
+scan triggers a slower batched retry; microcode mitigations can still remove the
+signal entirely. A timing candidate
+is an estimate: weak boundaries and structured noise can affect its accuracy.
 
 ## Using libkpwn in your project
 

