@@ -21,6 +21,9 @@ size_t kasld(void);
 
 // Individual strategies (called by kasld)
 size_t kasld_proc_kallsyms(void);
+// Prefetch requires RDTSCP, readable CPU flags and KPTI disabled. Returns 0
+// without a confirmed timing signal. Temporarily pins the calling thread to an
+// allowed CPU, then restores its affinity. AMD may use a slower batched retry.
 size_t kasld_prefetch(void);
 
 // Legacy API — all delegate to kasld_prefetch()

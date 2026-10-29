@@ -17,10 +17,13 @@ LIB_SRCS := $(wildcard src/*.c) \
             $(wildcard src/$(KPWN_ARCH)/*.c) \
             $(wildcard src/$(KPWN_ARCH)/*.s)
 LIB_OBJS := $(patsubst %,$(BUILD)/%.o,$(LIB_SRCS))
+LIB_HEADERS := $(wildcard include/kpwn/*.h include/kpwn/$(KPWN_ARCH)/*.h \
+                         src/$(KPWN_ARCH)/*.h)
 
 TEST_SRCS := $(KPWN_SRCS) $(filter-out tests/smoke_%.c,$(wildcard tests/*.c))
 
-FORMAT_FILES := $(shell find src include tests template demo.c -name '*.c' -o -name '*.h' 2>/dev/null)
+# Kernel-generated module metadata is not maintained source.
+FORMAT_FILES := $(filter-out %.mod.c,$(shell find src include tests template demo.c -name '*.c' -o -name '*.h' 2>/dev/null))
 
 .PHONY: all lib test smoke format format-check clean
 all: lib test
@@ -30,14 +33,14 @@ lib: libkpwn.a
 libkpwn.a: $(LIB_OBJS)
 	ar rcs $@ $^
 
-$(BUILD)/%.o: %
+$(BUILD)/%.o: % $(LIB_HEADERS)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(KPWN_CFLAGS) -c $< -o $@
 
 # --- unit tests (zero external deps: tests/ktest.h) ---------------------------
 test: run_test
-run_test: $(TEST_SRCS)
-	$(CC) $(CFLAGS) $(KPWN_CFLAGS) -Itests $^ -o $@
+run_test: $(TEST_SRCS) $(LIB_HEADERS) src/x86_64/prefetch_scan.h
+	$(CC) $(CFLAGS) $(KPWN_CFLAGS) -Itests $(TEST_SRCS) -o $@
 	./$@
 
 # --- smoke tests (real kernel interaction, not run in CI) ---------------------
